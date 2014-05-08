@@ -7,3 +7,4 @@
 Description here
 
 """
+from locusallele import LocusAlleleTraitFactory

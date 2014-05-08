@@ -7,3 +7,6 @@
 Description here
 
 """
+
+from overlap import calc_overlap_locusallele, calc_overlap_setstructured, get_different_feature_positions_locusallele,\
+    get_traits_differing_from_focal_setstructured

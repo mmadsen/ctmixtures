@@ -7,3 +7,6 @@
 Description here
 
 """
+from neutral_moran_rule import NeutralMoranRule
+from infinite_alleles_mutation_rule import InfiniteAllelesMutationRule
+from conformist_moran_rule import ConformistMoranRule
