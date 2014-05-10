@@ -11,6 +11,9 @@ Description here
 import networkx as nx
 from numpy.random import RandomState
 import logging as log
+import random as random
+import pprint as pp
+import madsenlab.ctmixtures.population as pop
 
 class LocusAlleleTraitFactory(object):
     """
@@ -22,16 +25,55 @@ class LocusAlleleTraitFactory(object):
      and passed the simulation configuration object in its constructor.  The instantiating
      code then calls initialize_population(graph), passing it a NetworkX graph of nodes, previously
      constructed
+
+    The second argument is a list of interaction rule dicts(), where each dict is the output from
+    utils.parse_interaction_rule_map() and utils.construct_rule_objects().  This list will be in the
+    form:  [ {name: FooRule, class: FooRuleObj, proportion: 0.5}, {name: BarRule, class: BarObj, proportion: 0.5 } ]
     """
 
     def __init__(self, simconfig):
         self.simconfig = simconfig
         self.prng = RandomState()  # allow the library to choose a seed via OS specific mechanism
 
-    def initialize_population(self,graph):
+    def initialize_population(self,graph,rule_list):
         nf = self.simconfig.num_features
         nt = self.simconfig.num_traits
+
+        order = graph.number_of_nodes()
+        shuffled_rules = self._initialize_random_mixture(order,rule_list)
+
+        i = 0
         for nodename in graph.nodes():
-            graph.node[nodename]['traits'] = self.prng.randint(0, nt, size=nf)
+            agent = pop.Agent(self.simconfig,i)
+            agent.rule = shuffled_rules[i]
+            agent.traits = self.prng.randint(0, nt, size=nf)
+
+            graph.node[nodename]['agent'] = agent
+            i += 1
 
 
+
+
+    def _initialize_random_mixture(self,n,rule_list):
+        """
+        Takes a list of rules and proportions, and returns a shuffled list of rule objects in the correct
+        proportions
+        """
+        obj_list = []
+        for rule in rule_list:
+            prop = float(rule["proportion"])
+            num = int(n * prop)
+            log.debug("creating %s obj for rule %s", num, rule["name"])
+            for i in xrange(num):
+                obj_list.append(rule["class"])
+
+        # check if the result has the right number of entries, it could be off by one, say if the proportions are
+        # 0.3, 0.3, 0.3.  Arbitrarily we add an extra of the first rule to break such ties.
+
+        if (len(obj_list) < n):
+            log.debug("obj_list size %s vs requested size %s", len(obj_list), n)
+            obj_list.append(rule_list[0]["class"])
+
+        random.shuffle(obj_list)
+        #log.debug("%s", pp.pformat(obj_list))
+        return obj_list

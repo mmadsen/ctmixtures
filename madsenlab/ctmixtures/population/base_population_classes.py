@@ -10,7 +10,7 @@ Description here
 
 import logging as log
 import networkx as nx
-import madsenlab.axelrod.utils.configuration
+import madsenlab.ctmixtures.utils.configuration
 import numpy as np
 import math as m
 import pprint as pp
@@ -36,13 +36,22 @@ class BaseGraphPopulation(object):
         self.prng = RandomState()  # allow the library to choose a seed via OS specific mechanism
         self.graph_factory = graph_factory
         self.trait_factory = trait_factory
+        self._interaction_rules = None
 
         # initialize the graph structure via the factory object
         self.agentgraph = self.graph_factory.get_graph()
 
+    @property
+    def interaction_rules(self):
+        return self._interaction_rules
+
+    @interaction_rules.setter
+    def interaction_rules(self,r):
+        self._interaction_rules = r
+
 
     def get_agent_by_id(self, agent_id):
-        return (agent_id, self.agentgraph.node[agent_id]['traits'])
+        return self.agentgraph.node[agent_id]['agent']
 
     def get_random_agent(self):
         """
@@ -94,7 +103,8 @@ class BaseGraphPopulation(object):
         return self.losses
 
     def initialize_population(self):
-        self.trait_factory.initialize_population(self.agentgraph)
+        self.trait_factory.initialize_population(self.agentgraph,self._interaction_rules)
+
 
     ### Abstract methods - derived classes need to override
     def draw_network_colored_by_culture(self):
@@ -147,11 +157,13 @@ class FixedTraitStructurePopulation(BaseGraphPopulation):
         #log.debug("setting agent %s: target traits: %s  old: %s new: %s", agent_id, trait_list, old_traits, new_traits)
 
     def __repr__(self):
-        rep = 'TreeTraitStructurePopulation: ['
+        rep = 'FixedTraitStructurePopulation: ['
         for nodename in self.agentgraph.nodes():
-            rep += "node %s: " % nodename
-            rep += pp.pformat(self.agentgraph.node[nodename]['traits'])
-            rep += ",\n"
+            rep += "{node %s: " % nodename
+            agent = self.agentgraph.node[nodename]["agent"]
+            rep += pp.pformat(agent.traits)
+            rep += " rule: %s " % agent.rule
+            rep += "},\n"
         rep += ' ]'
         return rep
 

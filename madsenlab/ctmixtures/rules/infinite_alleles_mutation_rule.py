@@ -31,7 +31,7 @@ class InfiniteAllelesMutationRule(object):
         self.model = model
         self.sc = self.model.simconfig
 
-    def step(self, timestep):
+    def step(self, agent, timestep):
         """
         Implements a single time step in the neutral drift Moran model, selecting a focal agent at
         random, and then one of the focal agent's neighbors (this rule knows nothing about
@@ -41,15 +41,13 @@ class InfiniteAllelesMutationRule(object):
         The two agents
 
         """
-        (agent_id, agent_traits) = self.model.get_random_agent()
-        (neighbor_id, neighbor_traits) = self.model.get_random_neighbor_for_agent(agent_id)
 
 
         # TODO:  implementation of IA mutation here
 
 
         #log.debug("agent %s: old: %s  neighbor: %s  post: %s differing: %s feature: %s val: %s ", agent_id, old_agent_traits, neighbor_traits, agent_traits,differing_features, random_feature, neighbor_trait )
-        self.model.set_agent_traits(agent_id, agent_traits)
+
 
         # track the interaction and time
         self.model.update_interactions(timestep)

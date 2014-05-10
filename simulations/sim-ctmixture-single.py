@@ -14,10 +14,11 @@ convergence since it should be temporary with mutation/noise.
 import logging as log
 import ming
 import argparse
-import madsenlab.axelrod.utils as utils
-import madsenlab.axelrod.analysis as stats
-import madsenlab.axelrod.data as data
-import madsenlab.axelrod.rules as rules
+import madsenlab.ctmixtures.utils as utils
+import madsenlab.ctmixtures.analysis as stats
+import madsenlab.ctmixtures.data as data
+import madsenlab.ctmixtures.dynamics as dyn
+import madsenlab.ctmixtures.rules as rules
 import pprint as pp
 from time import time
 import uuid
@@ -35,24 +36,18 @@ def setup():
     parser.add_argument("--dbport", help="database port, defaults to 27017", default="27017")
     parser.add_argument("--configuration", help="Configuration file for experiment", required=True)
     parser.add_argument("--popsize", help="Population size", required=True)
-    parser.add_argument("--maxinittraits", help="Max initial number of traits per indiv", required=True)
-    parser.add_argument("--learningrate", help="Rate at which traits are learned during interactions", required=True)
-    parser.add_argument("--lossrate", help="Rate at which traits are lost randomly by individuals (0.0 turns this off)", required=True)
+    parser.add_argument("--numloci", help="Number of loci per individual", required=True)
+    parser.add_argument("--maxinittraits", help="Max initial number of traits per locus for initialization", required=True)
     parser.add_argument("--innovrate", help="Rate at which innovations occur in population", required=True)
     parser.add_argument("--periodic", help="Periodic boundary condition", choices=['1','0'], required=True)
     parser.add_argument("--diagram", help="Draw a diagram of the converged model", action="store_true")
-    parser.add_argument("--swrewiring", help="Rewiring probability for Watts-Strogatz population graph", required=False)
-    parser.add_argument("--numtraittrees", help="Number of trait trees in the design space", required=True)
-    parser.add_argument("--branchingfactor", help="Value or mean for tree branching factor", required=True)
-    parser.add_argument("--depthfactor", help="Value or mean for tree depth factor", required=True)
-    parser.add_argument("--savetraitgraphs", help="Saves a snapshot of trait tree graphs", action="store_true")
     parser.add_argument("--samplinginterval", help="Interval between samples, once sampling begins, defaults to 1M steps", default="1000000")
-    parser.add_argument("--samplingstarttime", help="Time at which sampling begins, defaults to 1M steps", default="6000000")
-    parser.add_argument("--simulationendtime", help="Time at which simulation and sampling end, defaults to 10000000 steps", default="10000000")
+    parser.add_argument("--samplingstarttime", help="Time at which sampling begins, defaults to 250K steps", default="250000")
+    parser.add_argument("--simulationendtime", help="Time at which simulation and sampling end, defaults to 2M steps", default="2000000")
 
     args = parser.parse_args()
 
-    simconfig = utils.TreeStructuredConfiguration(args.configuration)
+    simconfig = utils.MixtureConfiguration(args.configuration)
 
     if args.debug == '1':
         log.basicConfig(level=log.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
@@ -71,11 +66,6 @@ def setup():
 
     simconfig.popsize = int(args.popsize)
     simconfig.maxtraits = int(args.maxinittraits)
-    simconfig.learning_rate = float(args.learningrate)
-    simconfig.num_trees = int(args.numtraittrees)
-    simconfig.branching_factor = float(args.branchingfactor)
-    simconfig.depth_factor = float(args.depthfactor)
-    simconfig.loss_rate = float(args.lossrate)
     simconfig.innov_rate = float(args.innovrate)
     simconfig.maxtime = int(args.simulationendtime)
     simconfig.script = __file__
@@ -90,42 +80,43 @@ def setup():
 
 def main():
     start = time()
-    structure_class_name = simconfig.POPULATION_STRUCTURE_CLASS
-    log.debug("Configuring Axelrod model with structure class: %s graph factory: %s interaction rule: %s", structure_class_name, simconfig.NETWORK_FACTORY_CLASS, simconfig.INTERACTION_RULE_CLASS)
 
-
-    model_constructor = utils.load_class(structure_class_name)
-    rule_constructor = utils.load_class(simconfig.INTERACTION_RULE_CLASS)
+    model_constructor = utils.load_class(simconfig.POPULATION_STRUCTURE_CLASS)
     graph_factory_constructor = utils.load_class(simconfig.NETWORK_FACTORY_CLASS)
     trait_factory_constructor = utils.load_class(simconfig.TRAIT_FACTORY_CLASS)
+    interaction_rule_list = utils.parse_interaction_rule_map(simconfig.INTERACTION_RULE_CLASS)
 
+
+    log.debug("Configuring CT Mixture Model with structure class: %s graph factory: %s interaction rule: %s", simconfig.POPULATION_STRUCTURE_CLASS, simconfig.NETWORK_FACTORY_CLASS, simconfig.INTERACTION_RULE_CLASS)
+
+    # instantiate the model and its various subobjects, including any interaction rules
     graph_factory = graph_factory_constructor(simconfig)
     trait_factory = trait_factory_constructor(simconfig)
 
     model = model_constructor(simconfig, graph_factory, trait_factory)
+    interaction_rule_list = utils.construct_rule_objects(interaction_rule_list, model)
+    model.interaction_rules = interaction_rule_list
+
+    # now we're ready to initialize the population
     model.initialize_population()
 
-
-
-    #counts = analysis.get_culture_counts(model)
+    # initialize a dynamics
+    dynamics = dyn.MoranDynamics(simconfig,model)
 
 
     log.info("Starting %s", simconfig.sim_id)
 
-    ax = rule_constructor(model)
-
-    timestep = 0
-
-
     while(1):
-        timestep += 1
-        ax.step(timestep)
+
+        dynamics.update()
+        timestep = dynamics.timestep
+
         if (timestep % 100000) == 0:
             log.debug("time: %s  active: %s  copies: %s  innov: %s losses: %s", timestep, ax.get_fraction_links_active(), model.get_interactions(), model.get_innovations(), model.get_losses())
             #ax.full_update_link_cache()
 
         if timestep > int(args.samplingstarttime) and timestep % int(args.samplinginterval)  == 0:
-            utils.sample_treestructured_model(model, args, simconfig, timestep, finalized=0)
+            utils.sample_mixture_model(model, args, simconfig, timestep)
         # if model.get_time_last_interaction() != timestep:
         #     live = utils.check_liveness(ax, model, args, simconfig, timestep)
         #     if live == False:
@@ -134,8 +125,7 @@ def main():
 
         # if the simulation is cycling endlessly, and after the cutoff time, sample and end
         if timestep >= simconfig.maxtime:
-
-            utils.sample_treestructured_model(model, args, simconfig, timestep, finalized=1)
+            utils.sample_mixture_model(model, args, simconfig, timestep)
             endtime = time()
             elapsed = endtime - start
             log.info("Completed: %s  Elapsed: %s", simconfig.sim_id, elapsed)
