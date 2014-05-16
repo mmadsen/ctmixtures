@@ -29,7 +29,7 @@ class BaseConfiguration(object):
     reproducibility.
     """
 
-    INTERACTION_RULE_CLASS = {"madsenlab.ctmixtures.rules.NeutralMoranRule": 0.5, "madsenlab.ctmixtures.rules.ConformistMoranRule": 0.5}
+    INTERACTION_RULE_CLASS = {"madsenlab.ctmixtures.rules.NeutralCopyingRule": 0.5, "madsenlab.ctmixtures.rules.ConformistCopyingRule": 0.5}
 
     POPULATION_STRUCTURE_CLASS = 'madsenlab.ctmixtures.population.FixedTraitStructurePopulation'
 
@@ -294,7 +294,9 @@ class MixtureConfiguration(BaseConfiguration):
 
     INNOVATION_RATE = [0.001,0.005]
 
+    CONFORMISM_STRENGTH = [0.1, 0.2, 0.05, 0.3]
 
+    ANTICONFORMISM_STRENGTH = [0.1, 0.2, 0.05, 0.3]
 
     parameter_labels = {
         'POPULATION_SIZES_STUDIED' : 'Population sizes',
@@ -311,7 +313,7 @@ class MixtureConfiguration(BaseConfiguration):
     vars_to_filter = ['config', '_prng', "_popsize", "_num_features", "_num_traits", "_sim_id", "_periodic", "_script",
                       "_innovation_rate", "_max_time", "_num_features", "_num_traits",
                       "INTERACTION_RULE_CLASS", "POPULATION_STRUCTURE_CLASS", "INNOVATION_RULE_CLASS",
-                      "NETWORK_FACTORY_CLASS", "TRAIT_FACTORY_CLASS"]
+                      "NETWORK_FACTORY_CLASS", "TRAIT_FACTORY_CLASS", "_conformism_strength", "_anticonformism_strength"]
     """
     List of variables which are never (or at least currently) pretty-printed into summary tables using the latex or markdown/pandoc methods
 
@@ -327,7 +329,25 @@ class MixtureConfiguration(BaseConfiguration):
         self._num_features = None
         self._num_traits = None
         self._innovation_rate = None
+        self._conformism_strength = None
+        self._anticonformism_strength = None
 
+
+    @property
+    def conformism_strength(self):
+        return self._conformism_strength
+
+    @conformism_strength.setter
+    def conformism_strength(self, v):
+        self._conformism_strength = v
+
+    @property
+    def anticonformism_strength(self):
+        return self._anticonformism_strength
+
+    @anticonformism_strength.setter
+    def anticonformism_strength(self, v):
+        self._anticonformism_strength = v
 
     @property
     def innovation_rate(self):

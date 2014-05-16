@@ -18,6 +18,8 @@ This rule implements the original Axelrod model on a lattice, given descriptions
 import logging as log
 import numpy.random as npr
 import madsenlab.ctmixtures.analysis as analysis
+from collections import defaultdict
+import random
 
 
 class InfiniteAllelesMutationRule(object):
@@ -31,26 +33,29 @@ class InfiniteAllelesMutationRule(object):
         self.model = model
         self.sc = self.model.simconfig
 
+        # the highest value used for each locus is initialized to the num_traits, since population initialization
+        # does not give out values higher than this.
+        self.highest_trait = defaultdict(int)
+        for locus in xrange(self.sc.num_features):
+            self.highest_trait[locus] = self.sc.num_traits
+
     def step(self, agent, timestep):
         """
-        Implements a single time step in the neutral drift Moran model, selecting a focal agent at
-        random, and then one of the focal agent's neighbors (this rule knows nothing about
-        how "neighbors" are represented, so the rule itself is fully generic to many
-        population structures, including those with long-distance connections.
-
-        The two agents
+        Implements infinite-alleles mutation for a locus, taking a randomly chosen agent, and giving them
+        a new (never before seen) trait at a random locus.
 
         """
 
-
-        # TODO:  implementation of IA mutation here
-
-
-        #log.debug("agent %s: old: %s  neighbor: %s  post: %s differing: %s feature: %s val: %s ", agent_id, old_agent_traits, neighbor_traits, agent_traits,differing_features, random_feature, neighbor_trait )
+        if npr.random() < self.sc.innovation_rate:
+            num_loci = self.sc.num_features
+            rand_locus = random.randint(0,num_loci)
+            # create new trait
+            self.highest_trait[rand_locus] += 1
+            agent.traits[self.highest_trait[rand_locus]]
 
 
         # track the interaction and time
-        self.model.update_interactions(timestep)
+        self.model.update_innovations(timestep)
 
 
 

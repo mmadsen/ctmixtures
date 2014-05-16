@@ -14,6 +14,7 @@ import logging as log
 import random as random
 import pprint as pp
 import madsenlab.ctmixtures.population as pop
+import math
 
 class LocusAlleleTraitFactory(object):
     """
@@ -62,8 +63,8 @@ class LocusAlleleTraitFactory(object):
         obj_list = []
         for rule in rule_list:
             prop = float(rule["proportion"])
-            num = int(n * prop)
-            log.debug("creating %s obj for rule %s", num, rule["name"])
+            num = int(math.ceil(n * prop))
+            log.info("creating %s obj for rule %s", num, rule["name"])
             for i in xrange(num):
                 obj_list.append(rule["class"])
 
@@ -71,7 +72,7 @@ class LocusAlleleTraitFactory(object):
         # 0.3, 0.3, 0.3.  Arbitrarily we add an extra of the first rule to break such ties.
 
         if (len(obj_list) < n):
-            log.debug("obj_list size %s vs requested size %s", len(obj_list), n)
+            log.info("obj_list size %s vs requested size %s", len(obj_list), n)
             obj_list.append(rule_list[0]["class"])
 
         random.shuffle(obj_list)

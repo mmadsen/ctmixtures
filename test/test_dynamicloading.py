@@ -31,7 +31,7 @@ class DynamicLoadingTest(unittest.TestCase):
         parsed = utils.parse_interaction_rule_map(irule)
 
         num_rules = len(parsed)
-        self.assertEqual(num_rules, 2)
+        self.assertEqual(num_rules, 3)
 
         log.info("parsed: %s", pp.pformat(parsed))
 

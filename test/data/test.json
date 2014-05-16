@@ -5,7 +5,7 @@
     "NUMBER_OF_DIMENSIONS_OR_FEATURES" : [1,2,4],
     "NUMBER_OF_TRAITS_PER_DIMENSION" : [8,16],
     "SIMULATION_CUTOFF_TIME" : 3000000,
-    "INTERACTION_RULE_CLASS" : {"madsenlab.ctmixtures.rules.NeutralMoranRule": 0.5, "madsenlab.ctmixtures.rules.ConformistMoranRule": 0.5},
+    "INTERACTION_RULE_CLASS" : {"madsenlab.ctmixtures.rules.NeutralCopyingRule": 0.33333, "madsenlab.ctmixtures.rules.ConformistCopyingRule": 0.3333, "madsenlab.ctmixtures.rules.AntiConformistCopyingRule": 0.333333},
     "POPULATION_STRUCTURE_CLASS" : "madsenlab.ctmixtures.population.FixedTraitStructurePopulation",
     "INNOVATION_RULE_CLASS" : "madsenlab.ctmixtures.population.InfiniteAllelesMutationRule",
     "NETWORK_FACTORY_CLASS" : "madsenlab.ctmixtures.population.SquareLatticeFactory",

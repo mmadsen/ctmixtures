@@ -7,7 +7,7 @@
 Description here
 
 """
-from neutral_moran_rule import NeutralMoranRule
+from neutral_copying_rule import NeutralCopyingRule
 from infinite_alleles_mutation_rule import InfiniteAllelesMutationRule
-from conformist_moran_rule import ConformistMoranRule
+from conformist_copying_rule import ConformistCopyingRule, AntiConformistCopyingRule
 from base_rule import BaseInteractionRule

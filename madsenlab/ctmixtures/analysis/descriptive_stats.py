@@ -10,58 +10,22 @@ Description here
 
 import logging as log
 from collections import defaultdict
+import slatkin
 import numpy as np
 import math as m
 import pprint as pp
 
-# TODO:  Need to go ensure this is appropriate for locusallele models
 
 
-def get_culture_count_map(pop):
-    counts = defaultdict(int)
-    graph = pop.agentgraph
-    for nodename in graph.nodes():
-        traits = graph.node[nodename]['traits']
-        culture = pop.get_traits_packed(traits)
-        counts[culture] += 1
-    return counts
-
-def get_culture_counts_dbformat(pop):
-    """
-    Takes an instance of a "population" and counts the distinct trait lists (i.e., cultures in the
-    Axelrod model sense) in the population.  Cultures are represented by packing the feature/trait list
-    into an integer which serves as an identifier for a unique combination of features and traits.
-
-    The return value is a dict of culture id, count.
-    """
-    counts = defaultdict(int)
-    graph = pop.agentgraph
-    for nodename in graph.nodes():
-        traits = graph.node[nodename]['traits']
-        culture = pop.get_traits_packed(traits)
-        counts[culture] += 1
-
-    # transform into the list of dicts that's more convenient to stuff into mongodb
-    stored_counts = []
-    for key,val in counts.items():
-        stored_counts.append(dict(cultureid=str(key),count=val))
-    #log.debug("counts: %s", stored_counts)
-    return stored_counts
 
 
-def get_num_traits_per_individual_stats(pop):
-    """
-    Takes an instance of a population and returns a tuple with the mean and standard deviation of the
-    number of traits per individual.  Only useful for the extensible and semantic models.
+## GOOD BELOW HERE
 
-    """
-    sizes = []
-    for nodename in pop.agentgraph.nodes():
-        sizes.append(len(pop.agentgraph.node[nodename]['traits']))
-    mean = np.mean(np.asarray(sizes))
-    sd = m.sqrt(np.var(np.asarray(sizes)))
-    return (mean, sd)
 
+def slatkin_exact_test(count_list):
+    (prob, theta) = slatkin.montecarlo(100000, count_list, len(count_list))
+    log.debug("slatkin prob: %s  theta: %s", prob, theta)
+    return prob
 
 
 def diversity_shannon_entropy(freq_list):
@@ -117,48 +81,83 @@ class PopulationTraitFrequencyAnalyzer(object):
     def get_trait_frequencies(self):
         return self.freq
 
+    def get_trait_frequencies_dbformat(self):
+        # transform into the list of dicts that's more convenient to stuff into mongodb
+        db_freq = []
+        for locus in self.freq:
+            l = []
+            for key,val in locus.items():
+                l.append(dict(trait=str(key),freq=val))
+            db_freq.append(l)
+        #log.debug("counts: %s", stored_counts)
+        return db_freq
+
     def get_trait_richness(self):
         """
         Returns the number of traits with non-zero frequencies
         """
-        return len( [freq for freq in self.freq.values() if freq > 0] )
+        richness = []
+        for locus in self.freq:
+            richness.append(len([freq for freq in locus.values() if freq > 0]))
+        return richness
 
     def get_trait_evenness_entropy(self):
-        return diversity_shannon_entropy(self.freq.values())
+        entropy = []
+        for locus in self.freq:
+            entropy.append(diversity_shannon_entropy(locus.values()))
+        return entropy
 
-    def get_trait_spectrum(self):
-        return self.spectrum
+    def get_trait_evenness_iqv(self):
+        iqv = []
+        for locus in self.freq:
+            iqv.append(diversity_iqv(locus.values()))
+        return iqv
+
+    def get_slatkin_exact_probability(self):
+        slatkin = []
+        for locus in self.counts:
+            cnt = sorted(locus.values(), reverse=True)
+            #log.info("cnt: %s", cnt)
+            slatkin.append(slatkin_exact_test(cnt))
+        return slatkin
 
 
     def calculate_trait_frequencies(self):
         self.freq = None
-        trait_counts = defaultdict(int)
+        nf = self.model.simconfig.num_features
+        #spectra = dict()  # spectra will be locus as key, value will be dicts of popcount, numtraits
+        self.counts = []  # counts will be locus as index to list, each list position is dict with key=trait, value=count
+        self.freq = []  # frequencies will be locus as index to list, each list position is dict with key=trait, value=freq
+
+        for i in xrange(0, nf):
+            self.counts.append(defaultdict(int))
+            self.freq.append(defaultdict(int))
 
         total = self.model.agentgraph.number_of_nodes()
 
         for agent_id in self.model.agentgraph.nodes():
-            agent_traits = self.model.agentgraph.node[agent_id]['traits']
-            for trait in agent_traits:
-                trait_counts[trait] += 1
+            agent_traits = self.model.agentgraph.node[agent_id]['agent'].traits
+            for i in xrange(0, nf):
+                self.counts[i][agent_traits[i]] += 1
 
-        #log.debug("counts: %s", pp.pformat(trait_counts))
+        for i in xrange(0, nf):
+            cnt = self.counts[i]
+            for trait,count in cnt.items():
+                self.freq[i][trait] = float(count) / float(total)
 
-        self.freq = {k : float(v)/float(total) for k,v in trait_counts.items()}
-        self.counts = trait_counts.items()
 
-        spectrum_count = defaultdict(int)
-        # we build the spectrum by counting the number of traits with a particular count
-        for trait, count in trait_counts.items():
-            spectrum_count[count] += 1
+        #log.debug("counts: %s", pp.pformat(self.counts))
+        #log.debug("freq: %s", pp.pformat(self.freq))
 
-        spectra = []
-        for popcount, numtraits in spectrum_count.items():
-            spectra.append(dict(popcount=popcount,numtraits=numtraits))
 
-        self.spectrum = spectra
-
-        #log.debug("spectrum: %s", pp.pformat(self.spectrum))
-
+    def get_culture_count_map(self):
+        counts = defaultdict(int)
+        graph = self.model.agentgraph
+        for nodename in graph.nodes():
+            traits = graph.node[nodename]['agent'].traits
+            culture = self.model.get_traits_packed(traits)
+            counts[culture] += 1
+        return counts
 
 
 

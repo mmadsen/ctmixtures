@@ -21,7 +21,7 @@ import madsenlab.ctmixtures.analysis as analysis
 from base_rule import BaseInteractionRule
 
 
-class NeutralMoranRule(BaseInteractionRule):
+class NeutralCopyingRule(BaseInteractionRule):
     """
     Implements a neutral copying process via Moran dynamics, taking an instance of a lattice model at construction.
     Returns control to the caller after each step(), so that other code can run to determine completion,
@@ -43,8 +43,6 @@ class NeutralMoranRule(BaseInteractionRule):
 
 
         neighbor = self.model.get_random_neighbor_for_agent(agent.id)
-
-
         differing_features = analysis.get_different_feature_positions_locusallele(agent.traits, neighbor.traits)
         old_agent_traits = list(agent.traits)
         if len(differing_features) == 1:

@@ -49,8 +49,8 @@ class ConfigurationTest(unittest.TestCase):
         config = utils.MixtureConfiguration(self.filename)
         irule = config.INTERACTION_RULE_CLASS
 
-        prop = irule["madsenlab.ctmixtures.rules.NeutralMoranRule"]
-        self.assertEqual(prop, 0.5)
+        prop = irule["madsenlab.ctmixtures.rules.NeutralCopyingRule"]
+        self.assertAlmostEqual(prop, 0.3, None, None, 0.1)
 
 
 

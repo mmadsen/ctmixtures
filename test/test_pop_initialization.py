@@ -18,14 +18,11 @@ import tempfile
 import pprint as pp
 
 
-
 class PopulationInitializationTest(unittest.TestCase):
     filename = "data/test.json"
 
-
-
     def test_shuffled_irules(self):
-        log.info("configuration: %s", self.filename)
+        log.info("entering test_shuffled_irules")
 
         config = utils.MixtureConfiguration(self.filename)
 
@@ -44,10 +41,11 @@ class PopulationInitializationTest(unittest.TestCase):
 
 
     def test_full_initialization(self):
-        log.info("configuration: %s", self.filename)
+        log.info("entering test_full_initialization")
+        log.debug("configuration: %s", self.filename)
 
         config = utils.MixtureConfiguration(self.filename)
-        config.popsize = 25
+        config.popsize = 36
         config.num_features = 2
         config.num_traits = 10
         irule = config.INTERACTION_RULE_CLASS
@@ -67,5 +65,4 @@ class PopulationInitializationTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    log.basicConfig(level=log.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
     unittest.main()
