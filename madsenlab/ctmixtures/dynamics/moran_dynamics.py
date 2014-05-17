@@ -7,12 +7,14 @@
 Description here
 
 """
+import logging as log
 
 class MoranDynamics(object):
 
-    def __init__(self, config, model):
+    def __init__(self, config, model, innovation_rule):
         self.config = config
         self.model = model
+        self.innovation_rule = innovation_rule
         self._timestep = 0
 
     @property
@@ -26,7 +28,14 @@ class MoranDynamics(object):
         and incrementing the timestep of the model.
         """
         random_agent = self.model.get_random_agent()
+        log.info("agent: %s", random_agent)
         rule = random_agent.rule
+        log.info("rule object: %s", rule)
         rule.step(random_agent, self._timestep)
+
+        # choose a different random agent, pass it to the innovation rule and see if it triggers this timestep
+        self.innovation_rule.step(self.model.get_random_agent(), self._timestep)
+
+        # increment the time in our dynamics
         self._timestep += 1
 

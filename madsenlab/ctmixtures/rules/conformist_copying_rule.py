@@ -122,6 +122,8 @@ class AntiConformistCopyingRule(BaseInteractionRule):
             agent.traits[rand_locus] = selected_trait
 
         else:
+            # TODO:  Reevaluate "different positions" code for both conformist and neutral - remove it.  Only appropriate for axelrod models
+
             # execute a normal random copy
             neighbor = self.model.get_random_neighbor_for_agent(agent.id)
             differing_features = analysis.get_different_feature_positions_locusallele(agent.traits, neighbor.traits)

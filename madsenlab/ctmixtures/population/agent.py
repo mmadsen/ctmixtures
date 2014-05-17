@@ -8,7 +8,7 @@ Description here
 
 """
 
-
+import pprint as pp
 
 class Agent(object):
     """
@@ -66,4 +66,12 @@ class Agent(object):
     def set_param(self,key,value):
         self._params[key] = value
 
+
+    def __repr__(self):
+        rep = 'Agent: ['
+        rep += pp.pformat(self._rule)
+        rep += ","
+        rep += pp.pformat(self._traits)
+        rep += ' ]'
+        return rep
 

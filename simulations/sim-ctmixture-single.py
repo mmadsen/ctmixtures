@@ -15,10 +15,8 @@ import logging as log
 import ming
 import argparse
 import madsenlab.ctmixtures.utils as utils
-import madsenlab.ctmixtures.analysis as stats
 import madsenlab.ctmixtures.data as data
 import madsenlab.ctmixtures.dynamics as dyn
-import madsenlab.ctmixtures.rules as rules
 import pprint as pp
 from time import time
 import uuid
@@ -61,15 +59,12 @@ def setup():
     config = data.getMingConfiguration(data.modules)
     ming.configure(**config)
 
-    if args.swrewiring:
-        simconfig.ws_rewiring = float(args.swrewiring)
-
+    simconfig.num_features = int(args.numloci)
+    simconfig.num_traits = int(args.maxinittraits)
     simconfig.popsize = int(args.popsize)
-    simconfig.maxtraits = int(args.maxinittraits)
     simconfig.innov_rate = float(args.innovrate)
     simconfig.maxtime = int(args.simulationendtime)
     simconfig.script = __file__
-    simconfig.save_graphs = args.savetraitgraphs
 
     simconfig.sim_id = uuid.uuid4().urn
     if args.periodic == '1':
@@ -85,7 +80,7 @@ def main():
     graph_factory_constructor = utils.load_class(simconfig.NETWORK_FACTORY_CLASS)
     trait_factory_constructor = utils.load_class(simconfig.TRAIT_FACTORY_CLASS)
     interaction_rule_list = utils.parse_interaction_rule_map(simconfig.INTERACTION_RULE_CLASS)
-
+    innovation_rule_constructor = utils.load_class(simconfig.INNOVATION_RULE_CLASS)
 
     log.debug("Configuring CT Mixture Model with structure class: %s graph factory: %s interaction rule: %s", simconfig.POPULATION_STRUCTURE_CLASS, simconfig.NETWORK_FACTORY_CLASS, simconfig.INTERACTION_RULE_CLASS)
 
@@ -93,15 +88,18 @@ def main():
     graph_factory = graph_factory_constructor(simconfig)
     trait_factory = trait_factory_constructor(simconfig)
 
+
+
     model = model_constructor(simconfig, graph_factory, trait_factory)
     interaction_rule_list = utils.construct_rule_objects(interaction_rule_list, model)
     model.interaction_rules = interaction_rule_list
 
     # now we're ready to initialize the population
     model.initialize_population()
+    innovation_rule = innovation_rule_constructor(model)
 
     # initialize a dynamics
-    dynamics = dyn.MoranDynamics(simconfig,model)
+    dynamics = dyn.MoranDynamics(simconfig,model,innovation_rule)
 
 
     log.info("Starting %s", simconfig.sim_id)

@@ -45,7 +45,7 @@ class PopulationInitializationTest(unittest.TestCase):
         log.debug("configuration: %s", self.filename)
 
         config = utils.MixtureConfiguration(self.filename)
-        config.popsize = 36
+        config.popsize = 100
         config.num_features = 2
         config.num_traits = 10
         irule = config.INTERACTION_RULE_CLASS
@@ -60,7 +60,7 @@ class PopulationInitializationTest(unittest.TestCase):
 
         p.initialize_population()
 
-        log.info("initialized population: %s", p)
+        log.debug("initialized population: %s", p)
 
 
 

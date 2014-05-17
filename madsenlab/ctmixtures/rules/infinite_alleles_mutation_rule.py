@@ -53,9 +53,8 @@ class InfiniteAllelesMutationRule(object):
             self.highest_trait[rand_locus] += 1
             agent.traits[self.highest_trait[rand_locus]]
 
-
-        # track the interaction and time
-        self.model.update_innovations(timestep)
+            # track the interaction and time
+            self.model.update_innovations()
 
 
 

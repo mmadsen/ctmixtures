@@ -55,8 +55,9 @@ def construct_rule_objects(rulelist, model):
     population, since each agent gets a rule object to work with.  Returns the same rulelist after modification.
     """
     for rule in rulelist:
+        list = []
         constructor = rule["class"]
         obj = constructor(model)
-        rule["class"]
+        rule["class"] = obj
 
     return rulelist
