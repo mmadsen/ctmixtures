@@ -23,16 +23,14 @@ from collections import defaultdict
 import random
 import numpy.random as npr
 
-class ConformistCopyingRule(BaseInteractionRule):
-    """
-    Implements a neutral copying process via Moran dynamics, taking an instance of a lattice model at construction.
-    Returns control to the caller after each step(), so that other code can run to determine completion,
-    take samples, etc.
-    """
 
-    def __init__(self, model):
-        self.model = model
-        self.sc = self.model.simconfig
+
+class BaseNeighborConformismRule(BaseInteractionRule):
+    """
+    Implements the common logic for conformist and anticonformist transmission.  If the CONFORMISM_FLAG is
+    set to True, then this is pro-conformism, if False, then anticonformism.
+
+    """
 
     def step(self, agent, timestep):
         """
@@ -49,40 +47,42 @@ class ConformistCopyingRule(BaseInteractionRule):
             # execute a local conformism rule among neighbors
                 # choose a random locus
             num_loci = self.sc.num_features
-            rand_locus = random.randint(0,num_loci)
+            rand_locus = npr.randint(0,num_loci - 1)
+            #log.info("conformism - random locus: %s", rand_locus)
 
             # get the traits from all neighbors at that locus
-            neighbor_ids = self.model.get_all_neighbors_for_agent(agent)
+            neighbors = self.model.get_all_neighbors_for_agent(agent.id)
             trait_cnts = defaultdict(int)
-            for neighbor in neighbor_ids:
-                trait_cnts[self.model.agentgraph[neighbor]["agent"].traits[rand_locus]] += 1
-            sorted_cnts = sorted(trait_cnts, reverse=True)
-            log.debug("sorted traits: %s", sorted_cnts)
+            for neighbor in neighbors:
+                ntrait = neighbor.traits[rand_locus]
+                trait_cnts[ntrait] += 1
+            sorted_cnts = sorted(trait_cnts, reverse=self.CONFORMISM_FLAG)
+            #log.debug("sorted traits: %s", sorted_cnts)
 
             # the most frequent trait will be the first item in the sorted trait list
             selected_trait = sorted_cnts[0]
-            log.debug("selected trait: %s", selected_trait)
+            #log.debug("selected trait: %s", selected_trait)
             agent.traits[rand_locus] = selected_trait
 
         else:
             # execute a normal random copy
             neighbor = self.model.get_random_neighbor_for_agent(agent.id)
-            differing_features = analysis.get_different_feature_positions_locusallele(agent.traits, neighbor.traits)
-            old_agent_traits = list(agent.traits)
-            if len(differing_features) == 1:
-                random_feature = differing_features[0]
-            else:
-                rand_feature_num = npr.randint(0, len(differing_features))
-                random_feature = differing_features[rand_feature_num]
-            neighbor_trait = neighbor.traits[random_feature]
-            agent.traits[random_feature] = neighbor_trait
-            log.debug("agent %s: old: %s  neighbor: %s  post: %s differing: %s feature: %s val: %s ", agent.id, old_agent_traits, neighbor.traits, agent.traits,differing_features, random_feature, neighbor_trait )
+            num_loci = self.sc.num_features
+            rand_locus = npr.randint(0,num_loci - 1)
+            #log.info("a/conformism but below rate, copy randomly - random locus: %s", rand_locus)
+
+            neighbor_trait = neighbor.traits[rand_locus]
+            agent.traits[rand_locus] = neighbor_trait
 
         # track the interaction and time
         self.model.update_interactions(timestep)
 
 
-class AntiConformistCopyingRule(BaseInteractionRule):
+
+
+
+
+class ConformistCopyingRule(BaseNeighborConformismRule):
     """
     Implements a neutral copying process via Moran dynamics, taking an instance of a lattice model at construction.
     Returns control to the caller after each step(), so that other code can run to determine completion,
@@ -92,54 +92,22 @@ class AntiConformistCopyingRule(BaseInteractionRule):
     def __init__(self, model):
         self.model = model
         self.sc = self.model.simconfig
+        self.CONFORMISM_FLAG = True
 
-    def step(self, agent, timestep):
-        """
-        Implements a single time step in the neutral drift Moran model, starting from a focal agent,
-        and then one of the focal agent's neighbors at random (this rule knows nothing about
-        how "neighbors" are represented, so the rule itself is fully generic to many
-        population structures, including those with long-distance connections.
 
-        """
 
-        if npr.random() < self.sc.anticonformism_strength:
-            # execute a local conformism rule among neighbors
-                # choose a random locus
-            num_loci = self.sc.num_features
-            rand_locus = random.randint(0,num_loci)
 
-            # get the traits from all neighbors at that locus
-            neighbor_ids = self.model.get_all_neighbors_for_agent(agent)
-            trait_cnts = defaultdict(int)
-            for neighbor in neighbor_ids:
-                trait_cnts[self.model.agentgraph[neighbor]["agent"].traits[rand_locus]] += 1
-            sorted_cnts = sorted(trait_cnts, reverse=False)
-            log.debug("sorted traits: %s", sorted_cnts)
+class AntiConformistCopyingRule(BaseNeighborConformismRule):
+    """
+    Implements a neutral copying process via Moran dynamics, taking an instance of a lattice model at construction.
+    Returns control to the caller after each step(), so that other code can run to determine completion,
+    take samples, etc.
+    """
 
-            # the least frequent trait will be the first item in the sorted trait list
-            selected_trait = sorted_cnts[0]
-            log.debug("selected trait: %s", selected_trait)
-            agent.traits[rand_locus] = selected_trait
-
-        else:
-            # TODO:  Reevaluate "different positions" code for both conformist and neutral - remove it.  Only appropriate for axelrod models
-
-            # execute a normal random copy
-            neighbor = self.model.get_random_neighbor_for_agent(agent.id)
-            differing_features = analysis.get_different_feature_positions_locusallele(agent.traits, neighbor.traits)
-            old_agent_traits = list(agent.traits)
-            if len(differing_features) == 1:
-                random_feature = differing_features[0]
-            else:
-                rand_feature_num = npr.randint(0, len(differing_features))
-                random_feature = differing_features[rand_feature_num]
-            neighbor_trait = neighbor.traits[random_feature]
-            agent.traits[random_feature] = neighbor_trait
-            log.debug("agent %s: old: %s  neighbor: %s  post: %s differing: %s feature: %s val: %s ", agent.id, old_agent_traits, neighbor.traits, agent.traits,differing_features, random_feature, neighbor_trait )
-
-        # track the interaction and time
-        self.model.update_interactions(timestep)
-
+    def __init__(self, model):
+        self.model = model
+        self.sc = self.model.simconfig
+        self.CONFORMISM_FLAG = False
 
 
 

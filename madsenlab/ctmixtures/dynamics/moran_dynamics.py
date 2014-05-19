@@ -28,11 +28,11 @@ class MoranDynamics(object):
         and incrementing the timestep of the model.
         """
         random_agent = self.model.get_random_agent()
-        log.info("agent: %s", random_agent)
         rule = random_agent.rule
-        log.info("rule object: %s", rule)
+        #log.info("entering copying step %s with agent %s", self._timestep, random_agent)
         rule.step(random_agent, self._timestep)
 
+        #log.info("entering mutation rule")
         # choose a different random agent, pass it to the innovation rule and see if it triggers this timestep
         self.innovation_rule.step(self.model.get_random_agent(), self._timestep)
 

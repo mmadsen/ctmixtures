@@ -24,7 +24,7 @@ import pprint as pp
 
 def slatkin_exact_test(count_list):
     (prob, theta) = slatkin.montecarlo(100000, count_list, len(count_list))
-    log.debug("slatkin prob: %s  theta: %s", prob, theta)
+    #log.debug("slatkin prob: %s  theta: %s", prob, theta)
     return prob
 
 

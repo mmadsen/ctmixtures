@@ -36,6 +36,9 @@ def setup():
     parser.add_argument("--popsize", help="Population size", required=True)
     parser.add_argument("--numloci", help="Number of loci per individual", required=True)
     parser.add_argument("--maxinittraits", help="Max initial number of traits per locus for initialization", required=True)
+    parser.add_argument("--conformismstrength", help="Strength of conformist bias [0.0 - 1.0]", required=True)
+    parser.add_argument("--anticonformismstrength", help="Strength of conformist bias [0.0 - 1.0]", required=True)
+
     parser.add_argument("--innovrate", help="Rate at which innovations occur in population", required=True)
     parser.add_argument("--periodic", help="Periodic boundary condition", choices=['1','0'], required=True)
     parser.add_argument("--diagram", help="Draw a diagram of the converged model", action="store_true")
@@ -65,6 +68,9 @@ def setup():
     simconfig.innov_rate = float(args.innovrate)
     simconfig.maxtime = int(args.simulationendtime)
     simconfig.script = __file__
+    simconfig.conformism_strength = float(args.conformismstrength)
+    simconfig.anticonformism_strength = float(args.anticonformismstrength)
+    simconfig.maxtime = int(args.simulationendtime)
 
     simconfig.sim_id = uuid.uuid4().urn
     if args.periodic == '1':

@@ -74,7 +74,11 @@ class BaseGraphPopulation(object):
         return self.get_agent_by_id(rand_neighbor_id)
 
     def get_all_neighbors_for_agent(self, agent_id):
-        return self.agentgraph.neighbors(agent_id)
+        agents = self.agentgraph.neighbors(agent_id)
+        agent_list = []
+        for agent in agents:
+            agent_list.append(self.get_agent_by_id(agent))
+        return agent_list
 
 
     def get_coordination_number(self):

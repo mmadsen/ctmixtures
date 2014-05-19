@@ -41,18 +41,13 @@ class NeutralCopyingRule(BaseInteractionRule):
 
         """
 
+        num_loci = self.sc.num_features
+        rand_locus = npr.randint(0,num_loci - 1)
+        #log.info("neutrality - random locus: %s", rand_locus)
 
         neighbor = self.model.get_random_neighbor_for_agent(agent.id)
-        differing_features = analysis.get_different_feature_positions_locusallele(agent.traits, neighbor.traits)
-        old_agent_traits = list(agent.traits)
-        if len(differing_features) == 1:
-            random_feature = differing_features[0]
-        else:
-            rand_feature_num = npr.randint(0, len(differing_features))
-            random_feature = differing_features[rand_feature_num]
-        neighbor_trait = neighbor.traits[random_feature]
-        agent.traits[random_feature] = neighbor_trait
-        log.debug("agent %s: old: %s  neighbor: %s  post: %s differing: %s feature: %s val: %s ", agent.id, old_agent_traits, neighbor.traits, agent.traits,differing_features, random_feature, neighbor_trait )
+        neighbor_trait = neighbor.traits[rand_locus]
+        agent.traits[rand_locus] = neighbor_trait
 
         # track the interaction and time
         self.model.update_interactions(timestep)

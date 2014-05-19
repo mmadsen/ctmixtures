@@ -35,13 +35,13 @@ def _get_collection_id():
 
 
 
-def store_simulation_timing(sim_id,ruleclass,popclass,script,exp,elapsed,length):
+def store_simulation_timing(sim_id,rulemap,popclass,script,exp,elapsed,length):
     """Stores the parameters and metadata for a simulation run in the database.
 
     """
     SimulationTiming(dict(
         script_filename = script,
-        rule_class = ruleclass,
+        rule_class = rulemap,
         pop_class = popclass,
         simulation_run_id = sim_id,
         experiment_name = exp,
@@ -69,7 +69,7 @@ class SimulationTiming(Document):
 
     _id = Field(schema.ObjectId)
     script_filename = Field(str)
-    rule_class = Field(str)
+    rule_class = Field(dict(classname=str,proportion=float))
     pop_class = Field(str)
     simulation_run_id = Field(str)
     experiment_name = Field(str)

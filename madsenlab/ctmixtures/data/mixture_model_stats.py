@@ -35,7 +35,7 @@ def _get_collection_id():
 
 
 def store_stats_mixture_model(popsize,sim_id,nf,nt,
-                                 driftrate,ruleclass,popclass,script,
+                                 driftrate,rulemap,popclass,script,
                                  num_cultures,convergence_time,counts,klemm):
     """Stores the parameters and metadata for a simulation run in the database.
 
@@ -65,7 +65,7 @@ def store_stats_mixture_model(popsize,sim_id,nf,nt,
         num_features = nf,
         num_traits_per_feature = nt,
         drift_rate = driftrate,
-        rule_class = ruleclass,
+        rule_class = rulemap,
         pop_class = popclass,
         num_culture_regions = num_cultures,
         convergence_time = convergence_time,
@@ -86,7 +86,7 @@ class MixtureModelStats(Document):
     num_features = Field(int)
     num_traits_per_feature = Field(int)
     drift_rate = Field(float)
-    rule_class = Field(str)
+    rule_class = Field(dict(classname=str,proportion=float))
     pop_class = Field(str)
     population_size = Field(int)
     simulation_run_id = Field(str)

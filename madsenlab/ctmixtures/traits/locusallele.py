@@ -43,14 +43,14 @@ class LocusAlleleTraitFactory(object):
         order = graph.number_of_nodes()
         shuffled_rules = self._initialize_random_mixture(order,rule_list)
 
-        i = 0
+        id = 0
         for nodename in graph.nodes():
-            agent = pop.Agent(self.simconfig,i)
-            agent.rule = shuffled_rules[i]
+            agent = pop.Agent(self.simconfig,id)
+            agent.rule = shuffled_rules[id]
             agent.traits = self.prng.randint(0, nt, size=nf)
 
             graph.node[nodename]['agent'] = agent
-            i += 1
+            id += 1
 
 
 
