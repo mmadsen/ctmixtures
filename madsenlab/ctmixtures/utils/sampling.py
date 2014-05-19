@@ -14,5 +14,6 @@ import logging as log
 def sample_mixture_model(model, args, config, timestep):
     tfa = analysis.PopulationTraitFrequencyAnalyzer(model)
     tfa.calculate_trait_frequencies()
-
-    log.info("slatkin test: %s", tfa.get_slatkin_exact_probability())
+    freq = tfa.get_trait_frequencies()
+    #log.debug("freq: %s", freq)
+    log.debug("slatkin test: %s", tfa.get_slatkin_exact_probability())

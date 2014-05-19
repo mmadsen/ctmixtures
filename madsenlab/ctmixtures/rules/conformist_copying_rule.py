@@ -47,7 +47,7 @@ class BaseNeighborConformismRule(BaseInteractionRule):
             # execute a local conformism rule among neighbors
                 # choose a random locus
             num_loci = self.sc.num_features
-            rand_locus = npr.randint(0,num_loci - 1)
+            rand_locus = npr.randint(0,num_loci)
             #log.info("conformism - random locus: %s", rand_locus)
 
             # get the traits from all neighbors at that locus
@@ -68,14 +68,14 @@ class BaseNeighborConformismRule(BaseInteractionRule):
             # execute a normal random copy
             neighbor = self.model.get_random_neighbor_for_agent(agent.id)
             num_loci = self.sc.num_features
-            rand_locus = npr.randint(0,num_loci - 1)
+            rand_locus = npr.randint(0,num_loci)
             #log.info("a/conformism but below rate, copy randomly - random locus: %s", rand_locus)
 
             neighbor_trait = neighbor.traits[rand_locus]
             agent.traits[rand_locus] = neighbor_trait
 
         # track the interaction and time
-        self.model.update_interactions(timestep)
+        self.model.update_interactions(rand_locus, timestep)
 
 
 

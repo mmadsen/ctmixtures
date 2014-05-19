@@ -65,7 +65,7 @@ def setup():
     simconfig.num_features = int(args.numloci)
     simconfig.num_traits = int(args.maxinittraits)
     simconfig.popsize = int(args.popsize)
-    simconfig.innov_rate = float(args.innovrate)
+    simconfig.innovation_rate = float(args.innovrate)
     simconfig.maxtime = int(args.simulationendtime)
     simconfig.script = __file__
     simconfig.conformism_strength = float(args.conformismstrength)
@@ -116,7 +116,9 @@ def main():
         timestep = dynamics.timestep
 
         if (timestep % 100000) == 0:
-            log.debug("time: %s copying events: %s  innovations: %s", timestep, model.get_interactions(), model.get_innovations())
+            log.debug("time: %s copying events: %s copies by locus: %s  innovations: %s innov by locus: %s",
+                      timestep, model.get_interactions(), model.get_interactions_by_locus(), model.get_innovations(),
+                      model.get_innovations_by_locus())
             #ax.full_update_link_cache()
 
         if timestep > int(args.samplingstarttime) and timestep % int(args.samplinginterval)  == 0:

@@ -48,13 +48,13 @@ class InfiniteAllelesMutationRule(object):
 
         if npr.random() < self.sc.innovation_rate:
             num_loci = self.sc.num_features
-            rand_locus = random.randint(0,num_loci)
+            rand_locus = npr.randint(0,num_loci)
             # create new trait
             self.highest_trait[rand_locus] += 1
-            agent.traits[self.highest_trait[rand_locus]]
+            agent.traits[rand_locus] = self.highest_trait[rand_locus]
 
             # track the interaction and time
-            self.model.update_innovations()
+            self.model.update_innovations(rand_locus)
 
 
 

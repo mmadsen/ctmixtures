@@ -16,6 +16,7 @@ import math as m
 import pprint as pp
 import matplotlib.pyplot as plt
 from numpy.random import RandomState
+from collections import defaultdict
 
 ###################################################################################
 
@@ -30,6 +31,8 @@ class BaseGraphPopulation(object):
     def __init__(self,simconfig,graph_factory,trait_factory):
         self.simconfig = simconfig
         self.interactions = 0
+        self.interactions_locus = defaultdict(int)
+        self.innovations_locus = defaultdict(int)
         self.innovations = 0
         self.losses = 0
         self.time_step_last_interaction = 0
@@ -84,12 +87,14 @@ class BaseGraphPopulation(object):
     def get_coordination_number(self):
         return self.graph_factory.get_lattice_coordination_number()
 
-    def update_interactions(self, timestep):
+    def update_interactions(self, locus, timestep):
         self.interactions += 1
+        self.interactions_locus[locus] += 1
         self.time_step_last_interaction = timestep
 
-    def update_innovations(self):
+    def update_innovations(self, locus):
         self.innovations += 1
+        self.innovations_locus[locus] += 1
 
     def update_loss_events(self):
         self.losses += 1
@@ -99,6 +104,12 @@ class BaseGraphPopulation(object):
 
     def get_interactions(self):
         return self.interactions
+
+    def get_interactions_by_locus(self):
+        return self.interactions_locus.values()
+
+    def get_innovations_by_locus(self):
+        return self.innovations_locus.values()
 
     def get_innovations(self):
         return self.innovations
