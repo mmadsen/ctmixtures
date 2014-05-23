@@ -56,7 +56,7 @@ class BaseConfiguration(object):
     different population and random seed.
     """
 
-    POPULATION_SIZES_STUDIED = [1000,2000]
+    POPULATION_SIZES_STUDIED = [400,900,1600,2500,10000]
     """
     In most of the CT models we study, the absolute amount of variation we might expect to see is
     partially a function of the number of individuals doing the transmitting.  This is *total* population
@@ -64,6 +64,9 @@ class BaseConfiguration(object):
     going to model this on a grid, these numbers should be perfect squares, so that if the population size is N,
     the lattice size (on a side) is SQRT(N).
     """
+
+    SAMPLE_SIZES_STUDIED = [10,20,40,80,120]
+
 
     base_parameter_labels = {
         'POPULATION_SIZES_STUDIED' : 'Population sizes',
@@ -108,6 +111,7 @@ class BaseConfiguration(object):
         self._periodic = None
         self._script = None
         self._max_time = None
+        self._sample_size = None
 
         # set up a global RNG everything can use
         self._prng = RandomState()
@@ -157,6 +161,14 @@ class BaseConfiguration(object):
     @maxtime.setter
     def maxtime(self,val):
         self._max_time = val
+
+    @property
+    def sample_size(self):
+        return self._sample_size
+
+    @sample_size.setter
+    def sample_size(self,val):
+        self._sample_size = val
 
 
     def __repr__(self):
@@ -313,7 +325,7 @@ class MixtureConfiguration(BaseConfiguration):
     vars_to_filter = ['config', '_prng', "_popsize", "_num_features", "_num_traits", "_sim_id", "_periodic", "_script",
                       "_innovation_rate", "_max_time", "_num_features", "_num_traits",
                       "INTERACTION_RULE_CLASS", "POPULATION_STRUCTURE_CLASS", "INNOVATION_RULE_CLASS",
-                      "NETWORK_FACTORY_CLASS", "TRAIT_FACTORY_CLASS", "_conformism_strength", "_anticonformism_strength"]
+                      "NETWORK_FACTORY_CLASS", "TRAIT_FACTORY_CLASS", "_conformism_strength", "_anticonformism_strength", "_sample_size"]
     """
     List of variables which are never (or at least currently) pretty-printed into summary tables using the latex or markdown/pandoc methods
 

@@ -34,44 +34,41 @@ def _get_collection_id():
 
 
 
-def store_stats_mixture_model(popsize,sim_id,nf,nt,
-                                 driftrate,rulemap,popclass,script,
-                                 num_cultures,convergence_time,counts,klemm):
+def store_stats_mixture_model(popsize,sim_id,nf,nt,sample_size,
+                                 popclass,networkclass,
+                                 traitclass,innovationclass,interaction_rule,
+                                 script,num_configs,sampletime,config_counts,
+                                 conformismstrength,anticonformismstrength,
+                                 innovation_rate,slatkin,entropy,iqv,
+                                 unlabeled_freq, unlabeled_count, conf_slatkin):
     """Stores the parameters and metadata for a simulation run in the database.
 
-        Args:
-
-            popsize (int):  Population size
-
-            sim_id (str):  UUID for this simulation run
-
-            num_features (int):  Number of loci/dimensions/features per agent
-
-            num_traits_per_feature (int): Number of traits per feature
-
-            replicates (int):  Number of independent populations to evolve with the same set of parameters
-
-            script (str):  Pathname to the simuPOP simulation script used for this simulation run
-
-        Returns:
-
-            Boolean true:  all PyOperators need to return true.
 
     """
     MixtureModelStats(dict(
-        population_size=popsize,
-        simulation_run_id=sim_id,
-        script_filename=script,
-        num_features = nf,
-        num_traits_per_feature = nt,
-        drift_rate = driftrate,
-        rule_class = rulemap,
+        simulation_run_id = sim_id,
+        sample_time = sampletime,
+        script_filename = script,
+        interaction_rule_classes = str(interaction_rule),
         pop_class = popclass,
-        num_culture_regions = num_cultures,
-        convergence_time = convergence_time,
-        culture_counts = counts,
-        klemm_normalized_L = klemm
-    )).m.insert()
+        network_class = networkclass,
+        trait_class = traitclass,
+        innovation_class = innovationclass,
+        num_features = nf,
+        init_traits_per_feature = nt,
+        conformism_strength = anticonformismstrength,
+        innovation_rate = innovation_rate,
+        sample_size = sample_size,
+        population_size = popsize,
+        slatkin_exact = slatkin,
+        shannon_entropy = entropy,
+        iqv_diversity = iqv,
+        num_trait_configurations = num_configs,
+        trait_configuration_counts = config_counts,
+        unlabeled_frequencies = unlabeled_freq,
+        unlabeled_counts = unlabeled_count,
+        configuration_slatkin = conf_slatkin,
+        )).m.insert()
     return True
 
 
@@ -82,17 +79,28 @@ class MixtureModelStats(Document):
         name = 'mixture_model_stats'
 
     _id = Field(schema.ObjectId)
-    script_filename = Field(str)
-    num_features = Field(int)
-    num_traits_per_feature = Field(int)
-    drift_rate = Field(float)
-    rule_class = Field(dict(classname=str,proportion=float))
-    pop_class = Field(str)
-    population_size = Field(int)
     simulation_run_id = Field(str)
-    num_culture_regions = Field(int)
-    culture_counts = Field([dict(cultureid=str,count=int)])
-    convergence_time = Field(int)
-    klemm_normalized_L = Field(float)
+    sample_time = Field(int)
+    script_filename = Field(str)
+    interaction_rule_classes = Field(str)
+    pop_class = Field(str)
+    network_class = Field(str)
+    trait_class = Field(str)
+    innovation_class = Field(str)
+    num_features = Field(int)
+    init_traits_per_feature = Field(int)
+    conformism_strength = Field(float)
+    anticonformism_strength = Field(float)
+    innovation_rate = Field(float)
+    sample_size = Field(int)
+    population_size = Field(int)
+    slatkin_exact = Field([float])
+    shannon_entropy = Field([float])
+    iqv_diversity = Field([float])
+    num_trait_configurations = Field(int)
+    trait_configuration_counts = Field([])
+    unlabeled_frequencies = Field([])
+    unlabeled_counts = Field([])
+    configuration_slatkin = Field(float)
 
 

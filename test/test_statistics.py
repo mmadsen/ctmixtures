@@ -44,7 +44,7 @@ class PopulationInitializationTest(unittest.TestCase):
 
 
         tfa = analysis.PopulationTraitFrequencyAnalyzer(p)
-        tfa.calculate_trait_frequencies()
+        tfa.update()
 
         dbfreq = tfa.get_trait_frequencies_dbformat()
         log.info("db format freq: %s", pp.pformat(dbfreq))
@@ -65,6 +65,9 @@ class PopulationInitializationTest(unittest.TestCase):
 
         ccounts = tfa.get_culture_count_map()
         log.info("ccount: %s", pp.pformat(ccounts))
+
+        unlabeled = tfa.get_unlabeled_frequency_lists()
+        log.info("unlabeled: %s", unlabeled)
 
         # can't test equality because we're assigning initial traits randomly
         # for locus in richness:

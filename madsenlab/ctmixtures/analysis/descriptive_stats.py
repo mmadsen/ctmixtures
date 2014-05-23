@@ -121,13 +121,42 @@ class PopulationTraitFrequencyAnalyzer(object):
             slatkin.append(slatkin_exact_test(cnt))
         return slatkin
 
+    def get_unlabeled_frequency_lists(self):
+        f = []
 
-    def calculate_trait_frequencies(self):
+        for locus in self.freq:
+            f.append(sorted(locus.values(), reverse=True))
+        #log.debug("unlab freq: %s", f)
+        return f
+
+    def get_unlabeled_configuration_counts(self):
+        counts = sorted(self.culture_counts.values(), reverse=True)
+        #log.debug("configuration counts: %s", counts)
+
+        return counts
+
+    def get_number_configurations(self):
+        return len(self.culture_counts)
+
+    def get_unlableled_count_lists(self):
+        f = []
+
+        for locus in self.counts:
+            f.append(sorted(locus.values(), reverse=True))
+        #log.debug("unlab count: %s", f)
+        return f
+
+    def get_configuration_slatkin_test(self):
+        config = self.get_unlabeled_configuration_counts()
+        return slatkin_exact_test(config)
+
+    def update(self):
         self.freq = None
         nf = self.model.simconfig.num_features
         #spectra = dict()  # spectra will be locus as key, value will be dicts of popcount, numtraits
         self.counts = []  # counts will be locus as index to list, each list position is dict with key=trait, value=count
         self.freq = []  # frequencies will be locus as index to list, each list position is dict with key=trait, value=freq
+        self.culture_counts = defaultdict(int)
 
         for i in xrange(0, nf):
             self.counts.append(defaultdict(int))
@@ -137,6 +166,8 @@ class PopulationTraitFrequencyAnalyzer(object):
 
         for agent_id in self.model.agentgraph.nodes():
             agent_traits = self.model.agentgraph.node[agent_id]['agent'].traits
+            culture = self.model.get_traits_packed(agent_traits)
+            self.culture_counts[culture] += 1
             for i in xrange(0, nf):
                 self.counts[i][agent_traits[i]] += 1
 
@@ -146,18 +177,8 @@ class PopulationTraitFrequencyAnalyzer(object):
                 self.freq[i][trait] = float(count) / float(total)
 
 
-        #log.debug("counts: %s", pp.pformat(self.counts))
-        #log.debug("freq: %s", pp.pformat(self.freq))
 
 
-    def get_culture_count_map(self):
-        counts = defaultdict(int)
-        graph = self.model.agentgraph
-        for nodename in graph.nodes():
-            traits = graph.node[nodename]['agent'].traits
-            culture = self.model.get_traits_packed(traits)
-            counts[culture] += 1
-        return counts
 
 
 

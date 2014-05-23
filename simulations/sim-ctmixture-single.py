@@ -38,7 +38,7 @@ def setup():
     parser.add_argument("--maxinittraits", help="Max initial number of traits per locus for initialization", required=True)
     parser.add_argument("--conformismstrength", help="Strength of conformist bias [0.0 - 1.0]", required=True)
     parser.add_argument("--anticonformismstrength", help="Strength of conformist bias [0.0 - 1.0]", required=True)
-
+    parser.add_argument("--samplesize", help="Size of samples taken to calculate all statistics", required=True)
     parser.add_argument("--innovrate", help="Rate at which innovations occur in population", required=True)
     parser.add_argument("--periodic", help="Periodic boundary condition", choices=['1','0'], required=True)
     parser.add_argument("--diagram", help="Draw a diagram of the converged model", action="store_true")
@@ -71,6 +71,7 @@ def setup():
     simconfig.conformism_strength = float(args.conformismstrength)
     simconfig.anticonformism_strength = float(args.anticonformismstrength)
     simconfig.maxtime = int(args.simulationendtime)
+    simconfig.sample_size = int(args.samplesize)
 
     simconfig.sim_id = uuid.uuid4().urn
     if args.periodic == '1':
@@ -126,7 +127,8 @@ def main():
 
         # if the simulation is cycling endlessly, and after the cutoff time, sample and end
         if timestep >= simconfig.maxtime:
-            utils.sample_mixture_model(model, args, simconfig, timestep)
+            # we'll get the last sample because the endtime will also be a multiple of the sampling interval
+            #utils.sample_mixture_model(model, args, simconfig, timestep)
             endtime = time()
             elapsed = endtime - start
             log.info("Completed: %s  Elapsed: %s", simconfig.sim_id, elapsed)

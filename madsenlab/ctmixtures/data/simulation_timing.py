@@ -41,7 +41,7 @@ def store_simulation_timing(sim_id,rulemap,popclass,script,exp,elapsed,length):
     """
     SimulationTiming(dict(
         script_filename = script,
-        rule_class = rulemap,
+        rule_class = str(rulemap),
         pop_class = popclass,
         simulation_run_id = sim_id,
         experiment_name = exp,
@@ -69,7 +69,7 @@ class SimulationTiming(Document):
 
     _id = Field(schema.ObjectId)
     script_filename = Field(str)
-    rule_class = Field(dict(classname=str,proportion=float))
+    rule_class = Field(str)
     pop_class = Field(str)
     simulation_run_id = Field(str)
     experiment_name = Field(str)
