@@ -26,8 +26,7 @@ def setup():
     parser.add_argument("--dbhost", help="database hostname, defaults to localhost", default="localhost")
     parser.add_argument("--dbport", help="database port, defaults to 27017", default="27017")
     parser.add_argument("--configuration", help="Configuration file for experiment", required=True)
-    parser.add_argument("--parallelism", help="Number of concurrent processes to run", default="4")
-    parser.add_argument("--savetraitgraphs", help="Saves a snapshot of trait tree graphs", action="store_true")
+
 
     args = parser.parse_args()
 
@@ -54,23 +53,19 @@ def main():
 
     basic_config = utils.TreeStructuredConfiguration(args.configuration)
 
-    if basic_config.INTERACTION_RULE_CLASS == 'madsenlab.axelrod.rules.MultipleTreePrerequisitesLearningCopyingRule':
-        state_space = [
-            basic_config.POPULATION_SIZES_STUDIED,
-            basic_config.TRAIT_LEARNING_RATE,
-            basic_config.MAXIMUM_INITIAL_TRAITS,
-            basic_config.NUM_TRAIT_TREES,
-            basic_config.TREE_BRANCHING_FACTOR,
-            basic_config.TREE_DEPTH_FACTOR,
-            basic_config.TRAIT_LOSS_RATE,
-            basic_config.INNOVATION_RATE,
-        ]
-    else:
-        log.error("This parallel sim runner not compatible with rule class: %s", basic_config.INTERACTION_RULE_CLASS)
-        exit(1)
+    state_space = [
+        basic_config.POPULATION_SIZES_STUDIED,
+        basic_config.TRAIT_LEARNING_RATE,
+        basic_config.MAXIMUM_INITIAL_TRAITS,
+        basic_config.NUM_TRAIT_TREES,
+        basic_config.TREE_BRANCHING_FACTOR,
+        basic_config.TREE_DEPTH_FACTOR,
+        basic_config.TRAIT_LOSS_RATE,
+        basic_config.INNOVATION_RATE,
+    ]
 
 
-    if basic_config.NETWORK_FACTORY_CLASS == 'madsenlab.axelrod.population.WattsStrogatzSmallWorldFactory':
+    if basic_config.NETWORK_FACTORY_CLASS == 'madsenlab.ctmixtures.population.WattsStrogatzSmallWorldFactory':
         state_space.append(basic_config.WS_REWIRING_FACTOR)
 
 

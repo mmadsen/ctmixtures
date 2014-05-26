@@ -4,6 +4,7 @@
     "INNOVATION_RATE" : [0.00001, 0.00005],
     "NUMBER_OF_DIMENSIONS_OR_FEATURES" : [1,2,4],
     "NUMBER_OF_TRAITS_PER_DIMENSION" : [8,16],
+    "SAMPLE_SIZES_STUDIED" : [5,10,20],
     "SIMULATION_CUTOFF_TIME" : 3000000,
     "INTERACTION_RULE_CLASS" : {"madsenlab.ctmixtures.rules.ConformistCopyingRule": 0.5, "madsenlab.ctmixtures.rules.AntiConformistCopyingRule": 0.5},
     "POPULATION_STRUCTURE_CLASS" : "madsenlab.ctmixtures.population.FixedTraitStructurePopulation",

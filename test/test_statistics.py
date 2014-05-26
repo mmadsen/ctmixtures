@@ -43,7 +43,7 @@ class PopulationInitializationTest(unittest.TestCase):
         p.initialize_population()
 
 
-        tfa = analysis.PopulationTraitFrequencyAnalyzer(p)
+        tfa = analysis.PopulationTraitAnalyzer(p)
         tfa.update()
 
         dbfreq = tfa.get_trait_frequencies_dbformat()
@@ -63,7 +63,7 @@ class PopulationInitializationTest(unittest.TestCase):
         log.info("slatkin: %s", pp.pformat(slatkin))
 
 
-        ccounts = tfa.get_culture_count_map()
+        ccounts = tfa.get_unlabeled_configuration_counts()
         log.info("ccount: %s", pp.pformat(ccounts))
 
         unlabeled = tfa.get_unlabeled_frequency_lists()
@@ -74,6 +74,61 @@ class PopulationInitializationTest(unittest.TestCase):
         #     self.assertEqual(config.num_traits, locus)
 
         self.assertEqual(len(richness), config.num_features)
+
+
+    def test_trait_samples(self):
+        log.info("test_trait_counting")
+
+        config = utils.MixtureConfiguration(self.filename)
+        config.popsize = 100
+        config.num_features = 2
+        config.num_traits = 30
+        irule = config.INTERACTION_RULE_CLASS
+        parsed = utils.parse_interaction_rule_map(irule)
+
+        tf = traits.LocusAlleleTraitFactory(config)
+        lf = pop.SquareLatticeFactory(config)
+        p = pop.FixedTraitStructurePopulation(config,lf,tf)
+
+        constructed = utils.construct_rule_objects(parsed,p)
+        p.interaction_rules = constructed
+
+        p.initialize_population()
+
+
+        tfa = analysis.SampledTraitAnalyzer(p)
+        tfa.update()
+
+        res = tfa.get_unlabeled_freq_by_ssize()
+        log.info("unlabeled freq by ssize: %s", res)
+
+        res = tfa.get_unlabeled_counts_by_ssize()
+        log.info("unlabeled counts by ssize: %s", res)
+
+        res = tfa.get_slatkin_by_ssize()
+        log.info("slatkin by ssize: %s", res)
+
+        res = tfa.get_richness_by_ssize()
+        log.info("richness by ssize: %s", res)
+
+        res = tfa.get_entropy_by_ssize()
+        log.info("entropy by ssize: %s", res)
+
+        res = tfa.get_iqv_by_ssize()
+        log.info("iqv by ssize: %s", res)
+
+        ccounts = tfa.get_unlabeled_configuration_counts_by_ssize()
+        log.info("configuration counts by ssize: %s", pp.pformat(ccounts))
+
+        cslat = tfa.get_configuration_slatkin_by_ssize()
+        log.info("configuration slatkin by ssize: %s", cslat)
+
+        nconfig = tfa.get_num_configurations_by_ssize()
+        log.info("config richness by ssize: %s", nconfig)
+
+        self.assertTrue(True)
+
+
 
 
 if __name__ == "__main__":

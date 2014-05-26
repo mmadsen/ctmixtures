@@ -75,6 +75,7 @@ class BaseConfiguration(object):
         'NUMBER_OF_TRAITS_PER_DIMENSION': 'Number of traits per locus/dimension/feature',
         'NUMBER_OF_DIMENSIONS_OR_FEATURES': 'Number of loci/dimensions/features each individual holds',
         'SIMULATION_CUTOFF_TIME' : 'Maximum time after which a simulation is sampled and terminated if it does not converge',
+        'SAMPLE_SIZES_STUDIED' : 'Sample size from population taken at each sampling event, for which statistics are calculated',
     }
 
 
@@ -317,7 +318,8 @@ class MixtureConfiguration(BaseConfiguration):
         'SIMULATION_CUTOFF_TIME' : 'Maximum time after which a simulation is sampled and terminated if it does not converge',
         'NUMBER_OF_DIMENSIONS_OR_FEATURES' : 'Number of loci or dimensions per individual',
         'NUMBER_OF_TRAITS_PER_DIMENSION' : 'Number of traits per locus from which the population is initialized',
-        'INNOVATION_RATE' : 'Population rate at which new innovations occur'
+        'INNOVATION_RATE' : 'Population rate at which new innovations occur',
+        'SAMPLE_SIZES_STUDIED' : 'Sample size from population taken at each sampling event, for which statistics are calculated',
     }
 
 
