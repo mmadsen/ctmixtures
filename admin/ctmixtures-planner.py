@@ -8,13 +8,11 @@ Description here
 
 """
 
-
 import logging as log
 import argparse
 import itertools
-import madsenlab.axelrod.utils as utils
 
-
+import ctmixtures.utils as utils
 
 
 def setup():
@@ -30,7 +28,7 @@ def setup():
 
     args = parser.parse_args()
 
-    simconfig = utils.TreeStructuredConfiguration(args.configuration)
+    simconfig = utils.MixtureConfiguration(args.configuration)
 
     if args.debug == '1':
         log.basicConfig(level=log.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
@@ -44,24 +42,18 @@ def setup():
 def main():
 
     structure_class_name = simconfig.POPULATION_STRUCTURE_CLASS
-    log.info("Configuring TreeStructured Axelrod model with structure class: %s", structure_class_name)
+    log.info("Configuring CTMixture model with structure class: %s", structure_class_name)
 
 
-    log.debug("Will open %s output files given parallelism", args.parallelism)
-
-
-
-    basic_config = utils.TreeStructuredConfiguration(args.configuration)
+    basic_config = utils.MixtureConfiguration(args.configuration)
 
     state_space = [
         basic_config.POPULATION_SIZES_STUDIED,
-        basic_config.TRAIT_LEARNING_RATE,
-        basic_config.MAXIMUM_INITIAL_TRAITS,
-        basic_config.NUM_TRAIT_TREES,
-        basic_config.TREE_BRANCHING_FACTOR,
-        basic_config.TREE_DEPTH_FACTOR,
-        basic_config.TRAIT_LOSS_RATE,
         basic_config.INNOVATION_RATE,
+        basic_config.NUMBER_OF_DIMENSIONS_OR_FEATURES,
+        basic_config.NUMBER_OF_TRAITS_PER_DIMENSION,
+        basic_config.CONFORMISM_STRENGTH,
+        basic_config.ANTICONFORMISM_STRENGTH
     ]
 
 

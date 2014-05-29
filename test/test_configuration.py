@@ -10,9 +10,9 @@ Description here
 
 import logging as log
 import unittest
-import madsenlab.ctmixtures.utils as utils
-import os
-import tempfile
+
+import ctmixtures.utils as utils
+
 
 log.basicConfig(level=log.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 

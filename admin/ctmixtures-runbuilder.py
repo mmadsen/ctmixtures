@@ -27,7 +27,6 @@ def setup():
     parser.add_argument("--dbport", help="database port, defaults to 27017", default="27017")
     parser.add_argument("--configuration", help="Configuration file for experiment", required=True)
     parser.add_argument("--parallelism", help="Number of concurrent processes to run", default="4")
-    parser.add_argument("--savetraitgraphs", help="Saves a snapshot of trait tree graphs", action="store_true")
     parser.add_argument("--samplinginterval", help="Interval between samples, once sampling begins, defaults to 1M steps", default="1000000")
     parser.add_argument("--samplingstarttime", help="Time at which sampling begins, defaults to 1M steps", default="6000000")
     parser.add_argument("--simulationendtime", help="Time at which simulation and sampling end, defaults to 10000000 steps", default="10000000")
@@ -96,7 +95,7 @@ def main():
 
     for param_combination in itertools.product(*state_space):
         for replication in range(0, basic_config.REPLICATIONS_PER_PARAM_SET):
-            cmd = "simulations/sim-treestructured-longrun.py "
+            cmd = "simulations/sim-ctmixture-single.py "
             cmd += " --experiment "
             cmd += args.experiment
             cmd += " --configuration "
@@ -109,7 +108,7 @@ def main():
             cmd += str(param_combination[1])
             cmd += " --lossrate "
             cmd += str(param_combination[6])
-            cmd += " --innovrate "
+            cmd += " --innovationrate "
             cmd += str(param_combination[7])
             cmd += " --periodic 0 "
             cmd += " --numtraittrees "
@@ -124,9 +123,6 @@ def main():
             if len(param_combination) == 9:
                 cmd += " --swrewiring "
                 cmd += str(param_combination[8])
-
-            if args.savetraitgraphs:
-                cmd += " --savetraitgraphs "
 
             if args.samplinginterval:
                 cmd += " --samplinginterval "

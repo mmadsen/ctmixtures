@@ -10,18 +10,17 @@ convergence since it should be temporary with mutation/noise.
 
 """
 
-
 import logging as log
-import ming
 import argparse
-import madsenlab.ctmixtures.utils as utils
-import madsenlab.ctmixtures.data as data
-import madsenlab.ctmixtures.dynamics as dyn
-import pprint as pp
 from time import time
 import uuid
 
+import ming
 
+import ctmixtures.utils as utils
+import ctmixtures.data as data
+import ctmixtures.dynamics as dyn
+import pytransmission.popgen as pg
 
 
 def setup():
@@ -38,10 +37,8 @@ def setup():
     parser.add_argument("--maxinittraits", help="Max initial number of traits per locus for initialization", required=True)
     parser.add_argument("--conformismstrength", help="Strength of conformist bias [0.0 - 1.0]", required=True)
     parser.add_argument("--anticonformismstrength", help="Strength of conformist bias [0.0 - 1.0]", required=True)
-    parser.add_argument("--samplesize", help="Size of samples taken to calculate all statistics", required=True)
-    parser.add_argument("--innovrate", help="Rate at which innovations occur in population", required=True)
+    parser.add_argument("--innovationrate", help="Theta value rate at which innovations occur in population", required=True)
     parser.add_argument("--periodic", help="Periodic boundary condition", choices=['1','0'], required=True)
-    parser.add_argument("--diagram", help="Draw a diagram of the converged model", action="store_true")
     parser.add_argument("--samplinginterval", help="Interval between samples, once sampling begins, defaults to 1M steps", default="1000000")
     parser.add_argument("--samplingstarttime", help="Time at which sampling begins, defaults to 250K steps", default="250000")
     parser.add_argument("--simulationendtime", help="Time at which simulation and sampling end, defaults to 2M steps", default="2000000")
@@ -65,13 +62,16 @@ def setup():
     simconfig.num_features = int(args.numloci)
     simconfig.num_traits = int(args.maxinittraits)
     simconfig.popsize = int(args.popsize)
-    simconfig.innovation_rate = float(args.innovrate)
+    mut = pg.moran_mutation_rate_from_theta(float(args.popsize), float(args.innovationrate))
+    simconfig.innovation_rate = float(args.numloci) * mut
+    log.debug("configured theta = %s, using numloci %s * per-locus mutation rate %s = all-loci innovation rate: %s", args.innovationrate, args.numloci, mut, simconfig.innovation_rate)
+
+
     simconfig.maxtime = int(args.simulationendtime)
     simconfig.script = __file__
     simconfig.conformism_strength = float(args.conformismstrength)
     simconfig.anticonformism_strength = float(args.anticonformismstrength)
     simconfig.maxtime = int(args.simulationendtime)
-    simconfig.sample_size = int(args.samplesize)
 
     simconfig.sim_id = uuid.uuid4().urn
     if args.periodic == '1':
@@ -120,15 +120,11 @@ def main():
             log.debug("time: %s copying events: %s copies by locus: %s  innovations: %s innov by locus: %s",
                       timestep, model.get_interactions(), model.get_interactions_by_locus(), model.get_innovations(),
                       model.get_innovations_by_locus())
-            #ax.full_update_link_cache()
 
-        if timestep > int(args.samplingstarttime) and timestep % int(args.samplinginterval)  == 0:
-            utils.sample_mixture_model(model, args, simconfig, timestep)
 
-        # if the simulation is cycling endlessly, and after the cutoff time, sample and end
+        # sample and end the simulation
         if timestep >= simconfig.maxtime:
-            # we'll get the last sample because the endtime will also be a multiple of the sampling interval
-            #utils.sample_mixture_model(model, args, simconfig, timestep)
+            utils.sample_mixture_model(model, args, simconfig, timestep)
             endtime = time()
             elapsed = endtime - start
             log.info("Completed: %s  Elapsed: %s", simconfig.sim_id, elapsed)

@@ -10,12 +10,10 @@ Description here
 
 import logging as log
 import unittest
+
 import madsenlab.ctmixtures.utils as utils
-import madsenlab.ctmixtures.traits as traits
+import ctmixtures.traits as traits
 import madsenlab.ctmixtures.population as pop
-import os
-import tempfile
-import pprint as pp
 
 
 class PopulationInitializationTest(unittest.TestCase):
