@@ -17,6 +17,11 @@ from numpy.random import RandomState
 import ctmixtures.population as pop
 
 
+
+
+
+
+
 class LocusAlleleTraitFactory(object):
     """
     A trait factory for models where agents have F loci and T possible traits per locus.
@@ -48,7 +53,7 @@ class LocusAlleleTraitFactory(object):
         for nodename in graph.nodes():
             agent = pop.Agent(self.simconfig,id)
             agent.rule = shuffled_rules[id]
-            agent.traits = self.prng.randint(0, nt, size=nf)
+            agent.traits = self.prng.randint(1, nt, size=nf)
 
             graph.node[nodename]['agent'] = agent
             id += 1

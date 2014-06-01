@@ -38,9 +38,10 @@ class BaseNeighborConformismRule(BaseInteractionRule):
 
         """
 
-        prob = 0
+        # self.strength is either conformism or anticonformism strength, depending upon which class it is.
+        # this allows asymmetric strengths
 
-        if npr.random() < self.sc.conformism_strength:
+        if npr.random() < self.strength:
             # execute a local conformism rule among neighbors
                 # choose a random locus
             num_loci = self.sc.num_features
@@ -90,6 +91,8 @@ class ConformistCopyingRule(BaseNeighborConformismRule):
         self.model = model
         self.sc = self.model.simconfig
         self.CONFORMISM_FLAG = True
+        self.strength = self.sc.conformism_strength
+
 
 
 
@@ -105,6 +108,7 @@ class AntiConformistCopyingRule(BaseNeighborConformismRule):
         self.model = model
         self.sc = self.model.simconfig
         self.CONFORMISM_FLAG = False
+        self.strength = self.sc.anticonformism_strength
 
 
 

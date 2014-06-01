@@ -38,7 +38,8 @@ def store_stats_mixture_model(config, timestep, num_configs,
                                  config_counts,slatkin,entropy,iqv,
                                  unlabeled_freq, unlabeled_count, conf_slatkin,richness,
                                  unlabeled_freq_ssize,unlabeled_count_ssize,unlabeled_config_ssize,
-                                 config_slatkin_ssize,entropy_ssize,iqv_ssize,slatkin_ssize,richness_ssize):
+                                 config_slatkin_ssize,entropy_ssize,iqv_ssize,slatkin_ssize,richness_ssize,
+                                 kandler_interval,kandler_remaining_count):
     """Stores the parameters and metadata for a simulation run in the database.
 
 
@@ -76,6 +77,8 @@ def store_stats_mixture_model(config, timestep, num_configs,
         iqv_ssize = iqv_ssize,
         slatkin_ssize = slatkin_ssize,
         richness_ssize = richness_ssize,
+        kandler_interval = kandler_interval,
+        kandler_remaining_count = kandler_remaining_count,
         )).m.insert()
     return True
 
@@ -123,6 +126,9 @@ class MixtureModelStats(Document):
     iqv_ssize = Field(schema.Anything)
     richness_ssize = Field(schema.Anything)
     slatkin_ssize = Field(schema.Anything)
+    # Kandler remaining traits observations
+    kandler_interval = Field(int)
+    kandler_remaining_count = Field([int])
 
 
 

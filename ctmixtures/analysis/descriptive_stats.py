@@ -82,8 +82,15 @@ class PopulationTraitAnalyzer(object):
         self.model = model
         self.total_traits = model.agentgraph.number_of_nodes()
 
+        # snapshots for calculating trait survival between two points or intervals
+        self._snapshot_one = dict()
+        self._snapshot_two = dict()
+
     def get_trait_frequencies(self):
         return self.freq
+
+    def get_trait_counts(self):
+        return self.counts
 
     def get_trait_frequencies_dbformat(self):
         # transform into the list of dicts that's more convenient to stuff into mongodb
@@ -183,6 +190,49 @@ class PopulationTraitAnalyzer(object):
             cnt = self.counts[i]
             for trait,count in cnt.items():
                 self.freq[i][trait] = float(count) / float(total)
+
+
+    def kandler_survival_start(self, timestep):
+        """
+        Records a snapshot of traits present in the population at timestep, recording the timestep
+        as well.  The snapshots are recorded as a set of the keys from the updated trait counts,
+        so we do not re-calculate anything from the population itself.
+        """
+        nf = self.model.simconfig.num_features
+        self._snapshot_one_time = timestep
+        for locus in xrange(0, nf):
+            self._snapshot_one[locus] = set(self.counts[locus].keys())
+
+
+    def kandler_survival_stop(self, timestep):
+        """
+        Records a second snapshot of traits present, in preparation for calculating the remaining traits over
+        the interval
+        """
+        nf = self.model.simconfig.num_features
+        self._snapshot_two_time = timestep
+        for locus in xrange(0, nf):
+            self._snapshot_two[locus] = set(self.counts[locus].keys())
+
+
+    def get_kandler_remaining_traits_per_locus(self):
+        """
+        Returns a tuple containing the time interval in steps, and a list of remaining trait counts
+
+        NOTE:  Kandler and Steele's (2013) analysis is conducted in the Wright-Fisher framework, and thus
+        may not be exactly correct in the Moran dynamics.  At a minimum, it makes predictions in generations,
+        not 1/N time steps, so this should be kept in mind when matching predicted values to observed ones.
+        """
+        nf = self.model.simconfig.num_features
+        remaining_traits = []
+        interval = self._snapshot_two_time - self._snapshot_one_time
+        for locus in xrange(0, nf):
+            remaining_set = self._snapshot_one[locus] & self._snapshot_two[locus]
+            log.debug("locus: %s snapshot one: %s  snapshot two: %s ", locus, self._snapshot_one[locus], self._snapshot_two[locus])
+            log.debug("locus: %s intersection: %s", locus, remaining_set)
+            remaining_traits.append(len(remaining_set))
+
+        return (interval, remaining_traits)
 
 
 

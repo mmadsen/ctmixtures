@@ -20,6 +20,7 @@ import ming
 import ctmixtures.utils as utils
 import ctmixtures.data as data
 import ctmixtures.dynamics as dyn
+import ctmixtures.analysis as analysis
 import pytransmission.popgen as pg
 
 
@@ -39,8 +40,7 @@ def setup():
     parser.add_argument("--anticonformismstrength", help="Strength of conformist bias [0.0 - 1.0]", required=True)
     parser.add_argument("--innovationrate", help="Theta value rate at which innovations occur in population", required=True)
     parser.add_argument("--periodic", help="Periodic boundary condition", choices=['1','0'], required=True)
-    parser.add_argument("--samplinginterval", help="Interval between samples, once sampling begins, defaults to 1M steps", default="1000000")
-    parser.add_argument("--samplingstarttime", help="Time at which sampling begins, defaults to 250K steps", default="250000")
+    parser.add_argument("--kandlerinterval", help="Interval for Kandler remaining traits sample, taken before maxtime, in generations (will be scaled to timesteps)", default="1000")
     parser.add_argument("--simulationendtime", help="Time at which simulation and sampling end, defaults to 2M steps", default="2000000")
 
     args = parser.parse_args()
@@ -73,6 +73,7 @@ def setup():
     simconfig.anticonformism_strength = float(args.anticonformismstrength)
     simconfig.maxtime = int(args.simulationendtime)
 
+
     simconfig.sim_id = uuid.uuid4().urn
     if args.periodic == '1':
         simconfig.periodic = 1
@@ -82,6 +83,12 @@ def setup():
 
 def main():
     start = time()
+
+    kandler_interval_in_generations = int(args.kandlerinterval)
+    kandler_interval_timesteps = kandler_interval_in_generations * simconfig.popsize
+    kandler_start_time = simconfig.maxtime - kandler_interval_timesteps
+
+    log.debug("Taking a Kandler trait survival sample of %s timesteps, beginning at tick %s", kandler_interval_timesteps, kandler_start_time)
 
     model_constructor = utils.load_class(simconfig.POPULATION_STRUCTURE_CLASS)
     graph_factory_constructor = utils.load_class(simconfig.NETWORK_FACTORY_CLASS)
@@ -109,7 +116,13 @@ def main():
     dynamics = dyn.MoranDynamics(simconfig,model,innovation_rule)
 
 
+    tfa = analysis.PopulationTraitAnalyzer(model)
+    ssfa = analysis.SampledTraitAnalyzer(model)
+
     log.info("Starting %s", simconfig.sim_id)
+
+    if (args.debug == '1'):
+        utils.debug_sample_mixture_model(tfa, ssfa, simconfig, 0)
 
     while(1):
 
@@ -120,11 +133,15 @@ def main():
             log.debug("time: %s copying events: %s copies by locus: %s  innovations: %s innov by locus: %s",
                       timestep, model.get_interactions(), model.get_interactions_by_locus(), model.get_innovations(),
                       model.get_innovations_by_locus())
+            utils.debug_sample_mixture_model(tfa, ssfa, simconfig, timestep)
 
+        if ( timestep == kandler_start_time ):
+            utils.start_kandler_remaining_trait_tracking(tfa, ssfa, timestep)
 
         # sample and end the simulation
         if timestep >= simconfig.maxtime:
-            utils.sample_mixture_model(model, args, simconfig, timestep)
+            utils.stop_kandler_remaining_trait_tracking(tfa, ssfa, timestep)
+            utils.sample_mixture_and_record_kandler_remaining_traits(tfa, ssfa, simconfig, timestep)
             endtime = time()
             elapsed = endtime - start
             log.info("Completed: %s  Elapsed: %s", simconfig.sim_id, elapsed)

@@ -11,7 +11,7 @@ import logging as log
 
 from configuration import MixtureConfiguration
 from dynamicloading import load_class, parse_interaction_rule_map, construct_rule_objects
-from ctmixtures.utils.sampling import sample_mixture_model
+from sampling import sample_mixture_model, sample_mixture_and_record_kandler_remaining_traits, start_kandler_remaining_trait_tracking, stop_kandler_remaining_trait_tracking, debug_sample_mixture_model
 import pytransmission.popgen as pg
 
 
