@@ -16,9 +16,10 @@ This rule implements the original Axelrod model on a lattice, given descriptions
 """
 
 from collections import defaultdict
-
+import logging as log
+from collections import OrderedDict
 import numpy.random as npr
-
+from operator import itemgetter
 from base_rule import BaseInteractionRule
 
 
@@ -46,7 +47,7 @@ class BaseNeighborConformismRule(BaseInteractionRule):
                 # choose a random locus
             num_loci = self.sc.num_features
             rand_locus = npr.randint(0,num_loci)
-            #log.info("conformism - random locus: %s", rand_locus)
+            #log.debug("(anti)conformism - random locus: %s with type: %s", rand_locus, self.ruletype)
 
             # get the traits from all neighbors at that locus
             neighbors = self.model.get_all_neighbors_for_agent(agent.id)
@@ -54,20 +55,23 @@ class BaseNeighborConformismRule(BaseInteractionRule):
             for neighbor in neighbors:
                 ntrait = neighbor.traits[rand_locus]
                 trait_cnts[ntrait] += 1
-            sorted_cnts = sorted(trait_cnts, reverse=self.CONFORMISM_FLAG)
-            #log.debug("sorted traits: %s", sorted_cnts)
 
-            # the most frequent trait will be the first item in the sorted trait list
-            selected_trait = sorted_cnts[0]
-            #log.debug("selected trait: %s", selected_trait)
-            agent.traits[rand_locus] = selected_trait
+            ordered_cnts = sorted(trait_cnts.items(), key=itemgetter(1), reverse=self.CONFORMISM_FLAG)
+            target_trait = ordered_cnts[0]
+            target_trait_key = target_trait[0]
+            target_trait_count = target_trait[1]
+
+            #log.debug("sorted traits: %s", ordered_cnts)
+            #log.debug("selected trait: %s", target_trait_key)
+
+            agent.traits[rand_locus] = target_trait_key
 
         else:
             # execute a normal random copy
             neighbor = self.model.get_random_neighbor_for_agent(agent.id)
             num_loci = self.sc.num_features
             rand_locus = npr.randint(0,num_loci)
-            #log.info("a/conformism but below rate, copy randomly - random locus: %s", rand_locus)
+            #log.debug("a/conformism but below rate, copy randomly - random locus: %s", rand_locus)
 
             neighbor_trait = neighbor.traits[rand_locus]
             agent.traits[rand_locus] = neighbor_trait
@@ -91,7 +95,9 @@ class ConformistCopyingRule(BaseNeighborConformismRule):
         self.model = model
         self.sc = self.model.simconfig
         self.CONFORMISM_FLAG = True
+        self.ruletype = 'conformism'
         self.strength = self.sc.conformism_strength
+        log.debug("Conformist rule operating at strength: %s", self.strength)
 
 
 
@@ -108,7 +114,9 @@ class AntiConformistCopyingRule(BaseNeighborConformismRule):
         self.model = model
         self.sc = self.model.simconfig
         self.CONFORMISM_FLAG = False
+        self.ruletype = 'anticonformism'
         self.strength = self.sc.anticonformism_strength
+        log.debug("Anticonformist rule operating at strength: %s", self.strength)
 
 
 

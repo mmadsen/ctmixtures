@@ -11,9 +11,9 @@ Description here
 import logging as log
 import unittest
 
-import madsenlab.ctmixtures.utils as utils
+import ctmixtures.utils as utils
 import ctmixtures.traits as traits
-import madsenlab.ctmixtures.population as pop
+import ctmixtures.population as pop
 
 
 class PopulationInitializationTest(unittest.TestCase):

@@ -121,8 +121,8 @@ def main():
 
     log.info("Starting %s", simconfig.sim_id)
 
-    if (args.debug == '1'):
-        utils.debug_sample_mixture_model(tfa, ssfa, simconfig, 0)
+    #if (args.debug == '1'):
+        #utils.debug_sample_mixture_model(tfa, ssfa, simconfig, 0)
 
     while(1):
 
@@ -130,10 +130,10 @@ def main():
         timestep = dynamics.timestep
 
         if (timestep % 100000) == 0:
-            log.debug("time: %s copying events: %s copies by locus: %s  innovations: %s innov by locus: %s",
-                      timestep, model.get_interactions(), model.get_interactions_by_locus(), model.get_innovations(),
+            log.debug("time: %s  copies by locus: %s  innovations: %s innov by locus: %s",
+                      timestep, model.get_interactions_by_locus(), model.get_innovations(),
                       model.get_innovations_by_locus())
-            utils.debug_sample_mixture_model(tfa, ssfa, simconfig, timestep)
+            #utils.debug_sample_mixture_model(tfa, ssfa, simconfig, timestep)
 
         if ( timestep == kandler_start_time ):
             utils.start_kandler_remaining_trait_tracking(tfa, ssfa, timestep)
