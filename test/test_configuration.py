@@ -17,7 +17,7 @@ import ctmixtures.utils as utils
 log.basicConfig(level=log.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 
 class ConfigurationTest(unittest.TestCase):
-    filename = "data/test.json"
+    filename = "test/test.json"
 
 
 

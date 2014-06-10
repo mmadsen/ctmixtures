@@ -17,7 +17,7 @@ import ctmixtures.population as pop
 
 
 class PopulationInitializationTest(unittest.TestCase):
-    filename = "data/test.json"
+    filename = "test/test.json"
 
     def test_shuffled_irules(self):
         log.info("entering test_shuffled_irules")

@@ -19,7 +19,7 @@ import ctmixtures.analysis as analysis
 
 
 class PopulationInitializationTest(unittest.TestCase):
-    filename = "data/test.json"
+    filename = "test/test.json"
 
     def test_trait_counting(self):
         log.info("test_trait_counting")

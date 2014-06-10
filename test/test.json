@@ -1,0 +1,15 @@
+{
+    "REPLICATIONS_PER_PARAM_SET" : 10,
+    "POPULATION_SIZES_STUDIED" : [100],
+    "INNOVATION_RATE" : [0.5, 1.0, 2.0, 5.0],
+    "NUMBER_OF_DIMENSIONS_OR_FEATURES" : [1,2,4],
+    "NUMBER_OF_TRAITS_PER_DIMENSION" : [8,16],
+    "SAMPLE_SIZES_STUDIED" : [5,10,20],
+    "SIMULATION_CUTOFF_TIME" : 3000000,
+    "INTERACTION_RULE_CLASS" : {"ctmixtures.rules.NeutralCopyingRule": 0.35, "ctmixtures.rules.ConformistCopyingRule": 0.25, "ctmixtures.rules.AntiConformistCopyingRule": 0.4},
+    "POPULATION_STRUCTURE_CLASS" : "ctmixtures.population.FixedTraitStructurePopulation",
+    "INNOVATION_RULE_CLASS" : "ctmixtures.population.InfiniteAllelesMutationRule",
+    "NETWORK_FACTORY_CLASS" : "ctmixtures.population.SquareLatticeFactory",
+    "TRAIT_FACTORY_CLASS" : "ctmixtures.traits.LocusAlleleTraitFactory"
+}
+
