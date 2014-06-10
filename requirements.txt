@@ -5,5 +5,4 @@ importlib
 numpy
 networkx
 matplotlib
-git+https://github.com/mmadsen/slatkin-exact-tools.git
 git+https://github.com/mmadsen/pytransmission.git
