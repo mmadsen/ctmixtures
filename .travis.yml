@@ -4,6 +4,7 @@ python:
 # command to install dependencies
 before_install:
   - sudo apt-get install swig
+  - ./install-slatkin-tools.sh
 install:
   - "pip install ."
   - "pip install -r requirements.txt"
