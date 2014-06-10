@@ -1,0 +1,8 @@
+pymongo
+ming
+uuid
+importlib
+numpy
+networkx
+git+https://github.com/mmadsen/slatkin-exact-tools.git
+git+https://github.com/mmadsen/pytransmission.git
