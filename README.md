@@ -6,6 +6,31 @@ Cultural transmission models with heterogeneous mixtures of social learning mode
 **BUILD STATUS**:  [![Build Status](https://travis-ci.org/mmadsen/ctmixtures.svg?branch=master)](https://travis-ci.org/mmadsen/ctmixtures)
 
 
+## Purpose ##
+
+The goal of the model is to simulate the population-level effects of realistic mixtures of social learning rules. I 
+conjecture that at the population level, mixtures of social learning rules will often converge to appear unbiased, 
+and thus the result of "neutral" or "random copying" processes -- in other words, will meet the quantitative expectations
+developed for pure diffusion processes, or the Wright-Fisher and Moran models from population genetics.  
+
+This is not a completely new conjecture, of course.  We know mathematically that many different stochastic processes converge 
+to a standard Fokker-Planck diffusion model, for example.  Within the archaeological literature, Mesoudi and Lycett (2009:42-43)
+note that "perhaps some mix of conformity, anti-conformity and innovation combine to produce aggregate, population-level data 
+that are indistinguishable from random copying.  However, to our knowledge, this claim has not yet been tested explicitly."
+
+In addition to testing that conjecture explicitly, my goal is to map the "basin of attraction" -- i.e., what specific 
+circumstances DO converge to apparent neutrality, and which retain statistical evidence of the original social 
+learning rules.  
+
+The simulation model contained here is written in Python, but relies on a number of modules which employ C code for 
+performance.  Models are non-graphical, and are meant to run in batch mode with little or no console output, because a single 
+run means little given the variability of these stochastic processes.  Data are logged to a MongoDB database,
+and the result of experiments emerges from statistical analysis of the results.  (That was by way of explaining that
+there aren't any GUI components, graphs, or little charts like one often sees in agent-based simulations).  
+
+That said, here's how to run the simulation model yourself.  
+
+
 ## Getting Started ##
 
 The major dependencies are:
@@ -195,7 +220,9 @@ I'll write more about what each statistic means, but this should get you running
 main entries (at the time this document was updated).  
 
 
+## Running Batches of Models ##
 
+TBD.  
 
 
 
