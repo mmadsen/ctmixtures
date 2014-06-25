@@ -26,6 +26,8 @@ class MoranDynamics(object):
         Implements a discrete version of a continuous time model (Moran dynamics)
         by selecting a random agent, and calling the step() method of that agent
         and incrementing the timestep of the model.
+
+        :returns timestep of the model at the conclusion of the step
         """
         random_agent = self.model.get_random_agent()
         rule = random_agent.rule
@@ -38,4 +40,5 @@ class MoranDynamics(object):
 
         # increment the time in our dynamics
         self._timestep += 1
+        return self._timestep
 

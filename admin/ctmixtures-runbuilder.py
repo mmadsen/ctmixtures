@@ -95,7 +95,7 @@ def main():
 
     for param_combination in itertools.product(*state_space):
         for replication in range(0, basic_config.REPLICATIONS_PER_PARAM_SET):
-            cmd = "simulations/sim-ctmixture-single.py "
+            cmd = "simulations/sim-ctmixture-notimeaveraging.py "
             cmd += " --experiment "
             cmd += args.experiment
             cmd += " --configuration "

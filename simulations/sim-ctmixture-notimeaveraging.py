@@ -126,8 +126,7 @@ def main():
 
     while(1):
 
-        dynamics.update()
-        timestep = dynamics.timestep
+        timestep = dynamics.update()
 
         if (timestep % 100000) == 0:
             log.debug("time: %s  copies by locus: %s  innovations: %s innov by locus: %s",

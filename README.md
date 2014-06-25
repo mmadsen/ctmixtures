@@ -111,9 +111,13 @@ directory by running `python setup.py install` in this directory.
 
 ## Running a Simulation ##
 
-The driver program for running a simulation is in the `simulations` directory, and is called `sim-ctmixture-single.py`.  
+The simplest driver program for running a simulation is in the `simulations` directory, and is called `sim-ctmixture-notimeaveraging.py`.  
 This script runs a single simulation model, and is given both a configuration file (in JSON format), and several
-command-line switches.  
+command-line switches.  This simulation model runs a mixture of CT transmission rules for some period of time without 
+sampling.  Given an interval to measure the survival of traits (ala Kandler and Steele), a sample is taken to start 
+trait tracking, and then a sample is taken to complete the analysis.  In addition to completing the survival analysis, the
+final sample taken also calculates and records a large number of sample- and population-specific statistics about 
+trait frequencies, diversity, etc.  
 
 Before running any simulation, ensure that MongoDB is running on your local machine (although it can be configured to 
 run on another server), and that no username and password is required to access it (which is the default configuration).  
@@ -152,12 +156,12 @@ transmission rule, and a proportion of the population which this rule should mak
 configuring a population with 50% conformist social learners, and 50% anti-conformists.  The simulation library assigns agents
 rules at random, according to these proportions.  
 
-The simulation program also takes a number of command line parameters, which specify the details of a single 
+A simulation program also takes a number of command line parameters, which specify the details of a single 
 simulation run.  Running the script without any parameters gives a usage message which lists the parameters.  Currently 
 (as of 6/15/14), these are:
 
 ```
-mark:ctmixtures/ (master) $ simulations/sim-ctmixture-single.py                                                                                                                                         [7:14:43]
+mark:ctmixtures/ (master) $ simulations/sim-ctmixture-notimeaveraging.py                                                                                                                                         [7:14:43]
 usage: sim-ctmixture-single.py [-h] --experiment EXPERIMENT [--debug DEBUG]
                                [--dbhost DBHOST] [--dbport DBPORT]
                                --configuration CONFIGURATION --popsize POPSIZE
@@ -172,7 +176,7 @@ usage: sim-ctmixture-single.py [-h] --experiment EXPERIMENT [--debug DEBUG]
 A typical simulation command might then be:
 
 ```
-mark:ctmixtures/ (master*) $  simulations/sim-ctmixture-single.py --experiment foo --configuration conf/test.json  --simulationendtime 200000  --kandlerinterval 100 --numloci 2 --maxinittraits 5  --periodic 0  --conformismstrength 0.1 --anticonformismstrength 0.1  --innovationrate 1.0 --debug 1 --popsize 100 
+mark:ctmixtures/ (master*) $  simulations/sim-ctmixture-notimeaveraging.py --experiment foo --configuration conf/test.json  --simulationendtime 200000  --kandlerinterval 100 --numloci 2 --maxinittraits 5  --periodic 0  --conformismstrength 0.1 --anticonformismstrength 0.1  --innovationrate 1.0 --debug 1 --popsize 100 
 
 ```
 
@@ -218,6 +222,11 @@ different dimensions or loci) present in the population when sampled).  Some var
 
 I'll write more about what each statistic means, but this should get you running with the model, if you have a row of data in MongoDB with about 37
 main entries (at the time this document was updated).  
+
+## Simulating CT Mixtures with Time Averaging ##
+
+TBD.
+
 
 
 ## Running Batches of Models ##
