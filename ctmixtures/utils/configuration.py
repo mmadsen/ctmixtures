@@ -329,6 +329,7 @@ class MixtureConfiguration(BaseConfiguration):
         'NUMBER_OF_TRAITS_PER_DIMENSION' : 'Number of traits per locus from which the population is initialized',
         'INNOVATION_RATE' : 'Population rate at which new innovations occur',
         'SAMPLE_SIZES_STUDIED' : 'Sample size from population taken at each sampling event, for which statistics are calculated',
+        'TIME_AVERAGING_DURATIONS' : 'Intervals (in units of population size) over which temporal aggregation occurs in the simulation'
     }
 
 

@@ -40,9 +40,9 @@ class PopulationInitializationTest(unittest.TestCase):
 
         p.initialize_population()
 
-
+        timestep = 10
         tfa = analysis.PopulationTraitAnalyzer(p)
-        tfa.update()
+        tfa.update(timestep)
 
         dbfreq = tfa.get_trait_frequencies_dbformat()
         log.info("db format freq: %s", pp.pformat(dbfreq))
@@ -93,9 +93,9 @@ class PopulationInitializationTest(unittest.TestCase):
 
         p.initialize_population()
 
-
+        timestep = 10
         tfa = analysis.SampledTraitAnalyzer(p)
-        tfa.update()
+        tfa.update(timestep)
 
         res = tfa.get_unlabeled_freq_by_ssize()
         log.info("unlabeled freq by ssize: %s", res)
