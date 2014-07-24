@@ -15,14 +15,14 @@ import logging as log
 
 
 def debug_sample_mixture_model(tfa, ssfa, config, timestep):
-    tfa.update()
-    ssfa.update()
+    tfa.update(timestep)
+    ssfa.update(timestep)
     log.debug("trait counts: %s", tfa.get_trait_counts())
 
 
 def sample_mixture_model(tfa, ssfa, config, timestep):
-    tfa.update()
-    ssfa.update()
+    tfa.update(timestep)
+    ssfa.update(timestep)
 
 
     data.store_stats_mixture_model(config,
@@ -52,17 +52,17 @@ def sample_mixture_model(tfa, ssfa, config, timestep):
 
 def start_kandler_remaining_trait_tracking(tfa, ssfa, timestep):
     log.debug("Starting Kandler remaining trait tracking at %s", timestep)
-    tfa.update()
+    tfa.update(timestep)
     tfa.kandler_survival_start(timestep)
 
 def stop_kandler_remaining_trait_tracking(tfa, ssfa, timestep):
     log.debug("Stopping Kandler remaining trait tracking at %s", timestep)
-    tfa.update()
+    tfa.update(timestep)
     tfa.kandler_survival_stop(timestep)
 
-def sample_mixture_and_record_kandler_remaining_traits(tfa, ssfa, config, timestep):
-    tfa.update()
-    ssfa.update()
+def record_final_samples(tfa, ssfa, config, timestep):
+    tfa.update(timestep)
+    ssfa.update(timestep)
 
     (interval, remaining_traits) = tfa.get_kandler_remaining_traits_per_locus()
 

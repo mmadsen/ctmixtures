@@ -4,9 +4,8 @@
 # This work is licensed under the terms of the Apache Software License, Version 2.0.  See the file LICENSE for details.
 
 """
-the purpose here is to run the tree structured model for a fixed length of time, with mutation, and see what
-happens to the structure of trait trees, sampled at fixed intervals.  We will leave in homophily, but ignore
-convergence since it should be temporary with mutation/noise.
+Run a single population simulation of a mixture of CT rules, with time averaged observations, trait survival
+analysis ala Kandler and Steele, and point/interval measures of trait distribution and diversity.
 
 """
 
@@ -84,11 +83,16 @@ def setup():
 def main():
     start = time()
 
+    # calculate timing and intervals for samples, given parameters
+    ta_interval_list = simconfig.TIME_AVERAGING_DURATIONS
+    max_ta_interval = max(ta_interval_list)
     kandler_interval_in_generations = int(args.kandlerinterval)
     kandler_interval_timesteps = kandler_interval_in_generations * simconfig.popsize
-    kandler_start_time = simconfig.maxtime - kandler_interval_timesteps
+    ending_indextime = simconfig.maxtime - (max_ta_interval * simconfig.popsize)
+    starting_indextime = ending_indextime - kandler_interval_timesteps
 
-    log.debug("Taking a Kandler trait survival sample of %s timesteps, beginning at tick %s", kandler_interval_timesteps, kandler_start_time)
+    log.debug("Configuring CT Mixture Model with structure class: %s graph factory: %s interaction rule: %s", simconfig.POPULATION_STRUCTURE_CLASS, simconfig.NETWORK_FACTORY_CLASS, simconfig.INTERACTION_RULE_CLASS)
+
 
     model_constructor = utils.load_class(simconfig.POPULATION_STRUCTURE_CLASS)
     graph_factory_constructor = utils.load_class(simconfig.NETWORK_FACTORY_CLASS)
@@ -96,13 +100,22 @@ def main():
     interaction_rule_list = utils.parse_interaction_rule_map(simconfig.INTERACTION_RULE_CLASS)
     innovation_rule_constructor = utils.load_class(simconfig.INNOVATION_RULE_CLASS)
     dynamics_constructor = utils.load_class(simconfig.DYNAMICS_CLASS)
-
-
-    log.debug("Configuring CT Mixture Model with structure class: %s graph factory: %s interaction rule: %s", simconfig.POPULATION_STRUCTURE_CLASS, simconfig.NETWORK_FACTORY_CLASS, simconfig.INTERACTION_RULE_CLASS)
+    timeaveraging_constructor = utils.load_class(simconfig.TIME_AVERAGING_CLASS)
 
     # instantiate the model and its various subobjects, including any interaction rules
     graph_factory = graph_factory_constructor(simconfig)
     trait_factory = trait_factory_constructor(simconfig)
+
+
+    # construct two time averaging objects
+    starting_ta_sample = timeaveraging_constructor(starting_indextime, ta_interval_list, simconfig.popsize, simconfig.num_features, ending_interval=False)
+    ending_ta_sample = timeaveraging_constructor(starting_indextime, ta_interval_list, simconfig.popsize, simconfig.num_features, ending_interval=True)
+
+    # calculate times for various sampling events
+    earliest_sample_time = starting_ta_sample.get_earliest_tick_for_all_intervals()
+    kandler_start_time_nota = starting_ta_sample.get_latest_tick_for_all_intervals()
+    kandler_stop_time_nota = ending_ta_sample.get_earliest_tick_for_all_intervals()
+
 
 
     model = model_constructor(simconfig, graph_factory, trait_factory)
@@ -116,14 +129,10 @@ def main():
     # initialize a dynamics
     dynamics = dynamics_constructor(simconfig,model,innovation_rule)
 
-
-    tfa = analysis.PopulationTraitAnalyzer(model)
+    tfa = analysis.TimeAveragedPopulationTraitAnalyzer(model, starting_ta_sample, ending_ta_sample)
     ssfa = analysis.SampledTraitAnalyzer(model)
 
     log.info("Starting %s", simconfig.sim_id)
-
-    #if (args.debug == '1'):
-        #utils.debug_sample_mixture_model(tfa, ssfa, simconfig, 0)
 
     while(1):
 
@@ -133,14 +142,26 @@ def main():
             log.debug("time: %s  copies by locus: %s  innovations: %s innov by locus: %s",
                       timestep, model.get_interactions_by_locus(), model.get_innovations(),
                       model.get_innovations_by_locus())
-            #utils.debug_sample_mixture_model(tfa, ssfa, simconfig, timestep)
 
-        if ( timestep == kandler_start_time ):
+        # starting at the beginning of the first time averaging window, we start feeding updates
+        # to the time averagers
+        if ( timestep >= earliest_sample_time ):
+            tfa.update(timestep)
+
+        # We want to sample the whole population for a Kandler & Shennan style trait survival analysis.
+        # This is the full population synchronic calculation, so it happens at two points in time.
+        # otherwise, the time averagers take care of the case where start & end are non-trivial duration samples.
+        if ( timestep == kandler_start_time_nota ):
             utils.start_kandler_remaining_trait_tracking(tfa, ssfa, timestep)
 
-        # sample and end the simulation
-        if timestep >= simconfig.maxtime:
+        if ( timestep == kandler_stop_time_nota ):
             utils.stop_kandler_remaining_trait_tracking(tfa, ssfa, timestep)
+
+
+        # sample and end the simulation, also recording time averaged stats for the population,
+        # and kandler & shennan trait survival for the time averaged samples.
+        # finally, record simulation timing so we can track performance and plan blocks of simulation runs
+        if timestep >= simconfig.maxtime:
             utils.record_final_samples(tfa, ssfa, simconfig, timestep)
             endtime = time()
             elapsed = endtime - start

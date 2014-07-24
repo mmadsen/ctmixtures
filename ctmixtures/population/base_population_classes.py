@@ -181,5 +181,12 @@ class FixedTraitStructurePopulation(BaseGraphPopulation):
         return rep
 
 
+    def debug_perturb_traits(self):
+        """
+        DEBUG ONLY method which randomly assigns new traits (from the existing population) to agents.
+        Basically the algorithm is the same as a Wright-Fisher rule, which could be handy for testing.
+        :return:
+        """
+        pass
 
 

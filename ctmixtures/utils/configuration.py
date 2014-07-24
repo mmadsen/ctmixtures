@@ -29,18 +29,23 @@ class BaseConfiguration(object):
     reproducibility.
     """
 
-    INTERACTION_RULE_CLASS = {"madsenlab.ctmixtures.rules.NeutralCopyingRule": 0.5, "madsenlab.ctmixtures.rules.ConformistCopyingRule": 0.5}
+    INTERACTION_RULE_CLASS = {"ctmixtures.rules.NeutralCopyingRule": 0.5, "ctmixtures.rules.ConformistCopyingRule": 0.5}
 
-    POPULATION_STRUCTURE_CLASS = 'madsenlab.ctmixtures.population.FixedTraitStructurePopulation'
+    POPULATION_STRUCTURE_CLASS = 'ctmixtures.population.FixedTraitStructurePopulation'
 
-    NETWORK_FACTORY_CLASS = 'madsenlab.ctmixtures.population.SquareLatticeFactory'
+    NETWORK_FACTORY_CLASS = 'ctmixtures.population.SquareLatticeFactory'
 
-    TRAIT_FACTORY_CLASS = 'madsenlab.ctmixtures.traits.LocusAlleleTraitFactory'
+    TRAIT_FACTORY_CLASS = 'ctmixtures.traits.LocusAlleleTraitFactory'
 
-    INNOVATION_RULE_CLASS = 'madsenlab.ctmixtures.population.InfiniteAllelesMutationRule'
+    INNOVATION_RULE_CLASS = 'ctmixtures.population.InfiniteAllelesMutationRule'
     """
     The fully qualified import path for a class which implements the population model.
     """
+
+    TIME_AVERAGING_CLASS = "pytransmission.aggregation.MoranTimeAverager"
+
+    DYNAMICS_CLASS = "ctmixtures.dynamics.MoranDynamics"
+
 
     STRUCTURE_PERIODIC_BOUNDARY = [True, False]
 
@@ -331,7 +336,8 @@ class MixtureConfiguration(BaseConfiguration):
     vars_to_filter = ['config', '_prng', "_popsize", "_num_features", "_num_traits", "_sim_id", "_periodic", "_script",
                       "_innovation_rate", "_max_time", "_num_features", "_num_traits",
                       "INTERACTION_RULE_CLASS", "POPULATION_STRUCTURE_CLASS", "INNOVATION_RULE_CLASS",
-                      "NETWORK_FACTORY_CLASS", "TRAIT_FACTORY_CLASS", "_conformism_strength", "_anticonformism_strength", "_sample_size"]
+                      "NETWORK_FACTORY_CLASS", "TRAIT_FACTORY_CLASS", "_conformism_strength", "_anticonformism_strength", "_sample_size", "TIME_AVERAGING_CLASS",
+                      "DYNAMICS_CLASS"]
     """
     List of variables which are never (or at least currently) pretty-printed into summary tables using the latex or markdown/pandoc methods
 
