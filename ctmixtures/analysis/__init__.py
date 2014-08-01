@@ -8,6 +8,8 @@ Description here
 
 """
 
-from ctmixtures.analysis.overlap import calc_overlap_locusallele, calc_overlap_setstructured, get_different_feature_positions_locusallele,\
-    get_traits_differing_from_focal_setstructured
-from ctmixtures.analysis.descriptive_stats import PopulationTraitAnalyzer, SampledTraitAnalyzer, TimeAveragedPopulationTraitAnalyzer
+from ctmixtures.analysis.overlap import (calc_overlap_locusallele, calc_overlap_setstructured,
+                                         get_different_feature_positions_locusallele,
+                                         get_traits_differing_from_focal_setstructured)
+from ctmixtures.analysis.descriptive_stats import (PopulationTraitAnalyzer, SampledTraitAnalyzer,
+                                                   TimeAveragedPopulationTraitAnalyzer, TimeAveragedSampledTraitAnalyzer)

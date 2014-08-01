@@ -15,6 +15,7 @@ import numpy as np
 import random
 import math as m
 import pprint as pp
+import pytransmission.utils as ptu
 
 
 
@@ -598,5 +599,245 @@ class SampledTraitAnalyzer(object):
 
 #################################################################################
 
+# TODO:  Do a standard TimeAveragedPopulationTraitAnalyzer and then take samples of [ssize] at stats calc time
+
+class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
+    """
+    Decorates a normal PopulationTraitAnalyzer class with additional tracking of
+    time averaged trait counts, using the TimeAverager classes from the pytransmission
+    package (https://github.com/mmadsen/pytransmission).
+
+    None of the original methods are overridden except update(), which calls the wrapped
+    PopulationTraitAnalyzer and then passes updated trait counts to all of the contained
+    time averager classes.  All of the original statistics are available for the
+    non-time averaged population observations, while in parallel a set of methods
+    are exposed for accessing time averaged versions of the same stats.  The latter return
+    the same data format as the population methods, but embedded in a dict where the key
+    is the duration of time averaging in generations (not model ticks, which will vary
+    with population size).  By convention, time averaged data are returned from the "ending"
+    time averager, which would include the final tick/generation of the simulation, which
+    makes the statistics comparable to the population statistics, which are calculated after
+    the last call to update (typically at the final sample of the simulation run).
+    """
+    def __init__(self, model, starting_timeaverager, ending_timeaverager):
+        # call superclass constructor
+        super(TimeAveragedSampledTraitAnalyzer, self).__init__(model)
+        self.ta_trackers = []
+        self.ta_trackers.append(starting_timeaverager)
+        self.ta_trackers.append(ending_timeaverager)
+        self.ending_ta = ending_timeaverager
+        self.starting_ta = starting_timeaverager
+        self.ssize_list = model.simconfig.SAMPLE_SIZES_STUDIED
+
+    # decorate update from the superclass to pass its results to the list of time averaging objects
+    def update(self, timestep):
+        super(TimeAveragedSampledTraitAnalyzer, self).update(timestep)
+
+        # The TA trackers expect a map with loci as keys, and dicts as values, where the value
+        # dicts are dicts of trait:count. The original pop/sample trait analyzers keep a list
+        # of dicts, where locus is implicit in the list position.  TODO:  commensurate data structures in the population analyzer & tatracker
+        locus = 0
+        countmap = dict()
+        for locus_map in self.counts:
+            countmap[locus] = locus_map
+            locus += 1
+
+
+        # if the timestep is within the intervals of any of the timeaverager objects, we record
+        # both trait counts for all loci/dimensions, and the intersected configurations/cultures/class counts
+        for tatracker in self.ta_trackers:
+            if tatracker.is_within_intervals(timestep):
+                # pass the count map to the tracker
+                tatracker.record_trait_count_sample(timestep,countmap,self.culture_counts)
+
+
+    def take_sample_snapshot(self):
+        """
+        Called once data collection is complete (i.e., no more calls to update() are anticipated.
+        Samples of the population, in a configured set of sizes, are taken.  As normal, the samples
+        are taken from the ending time averager, although for Kandler survival calculations, a set of
+        samples are taken from the starting time averager as well.
+        :return:  None
+        """
+        self.starting_ssize_counts = dict()
+        self.ending_ssize_counts = dict()
+        starting_raw_counts = self.starting_ta.get_counts_for_generation_intervals()
+        ending_raw_counts = self.ending_ta.get_counts_for_generation_intervals()
+
+        # process the ending counts
+        for interval, counts_by_locus in ending_raw_counts.items():
+            loci_map = dict()
+            for locus, counter in counts_by_locus.items():
+                sampled_counters = ptu.get_sampled_counter(self.ssize_list, counter)
+                loci_map[locus] = sampled_counters
+            self.ending_ssize_counts[interval] = loci_map
+
+        # process the starting counts
+        for interval, counts_by_locus in starting_raw_counts.items():
+            loci_map = dict()
+            for locus, counter in counts_by_locus.items():
+                sampled_counters = ptu.get_sampled_counter(self.ssize_list, counter)
+                loci_map[locus] = sampled_counters
+            self.starting_ssize_counts[interval] = loci_map
+
+        log.debug("ending_sampled_snapshot of counts: %s", self.ending_ssize_counts)
+
+
+    # TODO:  convert remaining methods to use ending_ssize_counts, and Kandler to use the ssize counts
+    def get_ta_trait_frequencies(self):
+        counts = self.ending_ta.get_counts_for_generation_intervals()
+        # we use the measured, not configured population size in case we do population dynamics
+        popsize = self.model.agentgraph.number_of_nodes()
+        freqmap = dict()
+        for interval, counts_by_locus in counts.items():
+            locimap = dict()
+            # the value of the dict for each locus should be a Counter
+            for locus, counter in counts_by_locus.items():
+                locusmap = dict()
+                for trait, cnt in counter.items():
+                    freq = float(cnt) / (float(popsize ** 2) * float(interval))
+                    locusmap[trait] = freq
+                locimap[locus] = locusmap
+            freqmap[interval] = locimap
+        #log.debug("ending TA frequency map: %s", freqmap)
+        return freqmap
+
+
+    def get_ta_trait_counts(self):
+        return self.ending_ta.get_counts_for_generation_intervals()
+
+
+    def get_ta_trait_richness(self):
+        richness_map = {}
+        counts = self.ending_ta.get_counts_for_generation_intervals()
+        for interval, counts_by_locus in counts.items():
+            richness_by_locus = dict()
+            for locus, counter in counts_by_locus.items():
+                nt = len([count for count in counter.values() if count > 0])
+                #log.debug("richness for interval %s locus: %: %s", interval, locus, nt)
+                richness_by_locus[locus] = nt
+            richness_map[interval] = richness_by_locus
+        #log.debug("richness_map: %s", richness_map)
+        return richness_map
+
+
+    def get_ta_trait_evenness_entropy(self):
+        freqmap = self.get_ta_trait_frequencies()
+        popsize = self.model.agentgraph.number_of_nodes()
+        entropy_map = {}
+        counts = self.ending_ta.get_counts_for_generation_intervals()
+        for interval, counts_by_locus in counts.items():
+            entropy_by_locus = dict()
+            for locus, counter in counts_by_locus.items():
+                freqlist = []
+                for trait, cnt in counter.items():
+                    freq = float(cnt) / (float(popsize ** 2) * float(interval))
+                    freqlist.append(freq)
+                    entropy_by_locus[locus] = diversity_shannon_entropy(freqlist)
+            entropy_map[interval] = entropy_by_locus
+        #log.debug("entropy_map: %s", entropy_map)
+        return entropy_map
+
+
+    def get_ta_trait_evenness_iqv(self):
+        freqmap = self.get_ta_trait_frequencies()
+        popsize = self.model.agentgraph.number_of_nodes()
+        entropy_map = {}
+        counts = self.ending_ta.get_counts_for_generation_intervals()
+        for interval, counts_by_locus in counts.items():
+            entropy_by_locus = dict()
+            for locus, counter in counts_by_locus.items():
+                freqlist = []
+                for trait, cnt in counter.items():
+                    freq = float(cnt) / (float(popsize ** 2) * float(interval))
+                    freqlist.append(freq)
+                    entropy_by_locus[locus] = diversity_iqv(freqlist)
+            entropy_map[interval] = entropy_by_locus
+        #log.debug("entropy_map: %s", entropy_map)
+        return entropy_map
+
+    def get_ta_slatkin_exact_probability(self):
+        slatkin_map = {}
+        counts = self.ending_ta.get_counts_for_generation_intervals()
+        for interval, counts_by_locus in counts.items():
+            slatkin_by_locus = dict()
+            for locus, counter in counts_by_locus.items():
+                counts = [count for count in counter.values()]
+                slatkin_by_locus[locus] = slatkin_exact_test(counts)
+            slatkin_map[interval] = slatkin_by_locus
+        #log.debug("slatkin_map: %s", slatkin_map)
+        return slatkin_map
+
+    def get_ta_unlabeled_configuration_counts(self):
+        return self.ending_ta.get_configuration_counts_for_generation_intervals()
+
+    def get_ta_unlabeled_frequency_lists(self):
+        counts = self.ending_ta.get_counts_for_generation_intervals()
+        # we use the measured, not configured population size in case we do population dynamics
+        popsize = self.model.agentgraph.number_of_nodes()
+        freqmap = dict()
+        for interval, counts_by_locus in counts.items():
+            locifreq = []
+            # the value of the dict for each locus should be a Counter
+            for locus, counter in counts_by_locus.items():
+                locival = []
+                for trait, cnt in counter.items():
+                    freq = float(cnt) / (float(popsize ** 2) * float(interval))
+                    locival.append(freq)
+                locifreq.append(sorted(locival, reverse=True))
+            freqmap[interval] = locifreq
+            #log.debug("ending TA unlabeled frequencies: %s", freqmap)
+        return freqmap
+
+    def get_ta_number_configurations(self):
+        counts = self.ending_ta.get_configuration_counts_for_generation_intervals()
+        num_config_map = dict()
+        for interval, map in counts.items():
+            num_config_map[interval] = len(map)
+        return num_config_map
+
+
+    def get_ta_unlableled_count_lists(self):
+        ulc_map = dict()
+        counts = self.ending_ta.get_counts_for_generation_intervals()
+        for interval, counts_by_locus in counts.items():
+            ulc_by_locus = dict()
+            for locus, counter in counts_by_locus.items():
+                counts = [count for count in counter.values()]
+                ulc_by_locus[locus] = [count for count in counter.values()]
+            ulc_map[interval] = ulc_by_locus
+        #log.debug("unlabeled counts: %s", ulc_map)
+        return ulc_map
+
+
+    def get_ta_configuration_slatkin_test(self):
+        slatkin_map = dict()
+        counts = self.ending_ta.get_configuration_counts_for_generation_intervals()
+        for interval, map in counts.items():
+            slatkin_map[interval] = slatkin_exact_test(sorted(map.values(), reverse=True))
+        return slatkin_map
+
+    def get_ta_kandler_remaining_traits_per_locus(self):
+        start_counts = self.starting_ta.get_counts_for_generation_intervals()
+        #log.debug("start_counts: %s", start_counts)
+        end_counts = self.ending_ta.get_counts_for_generation_intervals()
+        #log.debug("end_counts: %s", start_counts)
+        remaining_by_interval = dict()
+
+        for interval, counts_by_locus in start_counts.items():
+            remaining = []
+            for locus, counter in counts_by_locus.items():
+                start_counter = start_counts[interval][locus]
+                end_counter = end_counts[interval][locus]
+                remaining_set = start_counter & end_counter
+                remaining.append(len(remaining_set))
+            remaining_by_interval[interval] = remaining
+        #log.debug("ta kandler remaining: %s", remaining_by_interval)
+        return remaining_by_interval
+
+
+
+    def get_ta_trait_frequencies_dbformat(self):
+        pass
 
 
