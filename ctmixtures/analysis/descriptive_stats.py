@@ -599,8 +599,6 @@ class SampledTraitAnalyzer(object):
 
 #################################################################################
 
-# TODO:  Do a standard TimeAveragedPopulationTraitAnalyzer and then take samples of [ssize] at stats calc time
-
 class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
     """
     Decorates a normal PopulationTraitAnalyzer class with additional tracking of
@@ -661,8 +659,10 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
         """
         self.starting_ssize_counts = dict()
         self.ending_ssize_counts = dict()
+        self.config_ssize_counts = dict()
         starting_raw_counts = self.starting_ta.get_counts_for_generation_intervals()
         ending_raw_counts = self.ending_ta.get_counts_for_generation_intervals()
+        config_counts = self.ending_ta.get_configuration_counts_for_generation_intervals()
 
         # process the ending counts
         for interval, counts_by_locus in ending_raw_counts.items():
@@ -680,160 +680,204 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
                 loci_map[locus] = sampled_counters
             self.starting_ssize_counts[interval] = loci_map
 
-        log.debug("ending_sampled_snapshot of counts: %s", self.ending_ssize_counts)
+        # take a sample of configuration counts
+        for interval, ccounts in config_counts.items():
+            self.config_ssize_counts[interval] = ptu.get_sampled_dict_counts(self.ssize_list, ccounts)
 
 
-    # TODO:  convert remaining methods to use ending_ssize_counts, and Kandler to use the ssize counts
+        log.debug("ending sampled snapshot of counts: %s", self.ending_ssize_counts)
+        log.debug("ending sampled snapshot of configs: %s", self.config_ssize_counts)
+        log.debug("starting sampled snapshot of counts: %s", self.starting_ssize_counts)
+
+
+
     def get_ta_trait_frequencies(self):
-        counts = self.ending_ta.get_counts_for_generation_intervals()
-        # we use the measured, not configured population size in case we do population dynamics
-        popsize = self.model.agentgraph.number_of_nodes()
         freqmap = dict()
-        for interval, counts_by_locus in counts.items():
+
+        for interval, counts_by_locus in self.ending_ssize_counts.items():
             locimap = dict()
-            # the value of the dict for each locus should be a Counter
-            for locus, counter in counts_by_locus.items():
+
+            for locus, ssize_dict in counts_by_locus.items():
                 locusmap = dict()
-                for trait, cnt in counter.items():
-                    freq = float(cnt) / (float(popsize ** 2) * float(interval))
-                    locusmap[trait] = freq
+
+                for ssize, counter in ssize_dict.items():
+                    traits = dict()
+                    for trait, cnt in counter.items():
+                        freq = float(cnt) / float(ssize)
+                        traits[trait] = freq
+                    locusmap[ssize] = traits
+
                 locimap[locus] = locusmap
             freqmap[interval] = locimap
-        #log.debug("ending TA frequency map: %s", freqmap)
+        #log.debug("ending sampled TA frequency map: %s", freqmap)
         return freqmap
 
 
+
     def get_ta_trait_counts(self):
-        return self.ending_ta.get_counts_for_generation_intervals()
+        return self.ending_ssize_counts
 
 
     def get_ta_trait_richness(self):
         richness_map = {}
-        counts = self.ending_ta.get_counts_for_generation_intervals()
-        for interval, counts_by_locus in counts.items():
-            richness_by_locus = dict()
-            for locus, counter in counts_by_locus.items():
-                nt = len([count for count in counter.values() if count > 0])
-                #log.debug("richness for interval %s locus: %: %s", interval, locus, nt)
-                richness_by_locus[locus] = nt
-            richness_map[interval] = richness_by_locus
-        #log.debug("richness_map: %s", richness_map)
+        popsize = self.model.agentgraph.number_of_nodes()
+
+        for interval, counts_by_locus in self.ending_ssize_counts.items():
+            locimap = dict()
+
+            for locus, ssize_dict in counts_by_locus.items():
+                locusmap = dict()
+
+                for ssize, counter in ssize_dict.items():
+                    nt = len([count for count in counter.values() if count > 0])
+                    locusmap[ssize] = nt
+                locimap[locus] = locusmap
+            richness_map[interval] = locimap
+        #log.debug("ending sampled TA richness map: %s", richness_map)
         return richness_map
 
 
     def get_ta_trait_evenness_entropy(self):
-        freqmap = self.get_ta_trait_frequencies()
-        popsize = self.model.agentgraph.number_of_nodes()
         entropy_map = {}
-        counts = self.ending_ta.get_counts_for_generation_intervals()
-        for interval, counts_by_locus in counts.items():
-            entropy_by_locus = dict()
-            for locus, counter in counts_by_locus.items():
-                freqlist = []
-                for trait, cnt in counter.items():
-                    freq = float(cnt) / (float(popsize ** 2) * float(interval))
-                    freqlist.append(freq)
-                    entropy_by_locus[locus] = diversity_shannon_entropy(freqlist)
-            entropy_map[interval] = entropy_by_locus
-        #log.debug("entropy_map: %s", entropy_map)
+        popsize = self.model.agentgraph.number_of_nodes()
+
+        for interval, counts_by_locus in self.ending_ssize_counts.items():
+            locimap = dict()
+
+            for locus, ssize_dict in counts_by_locus.items():
+                locusmap = dict()
+
+                for ssize, counter in ssize_dict.items():
+                    freqlist = [float(cnt) / float(ssize) for cnt in counter.values() if cnt > 0]
+
+                    locusmap[ssize] = diversity_shannon_entropy(freqlist)
+                locimap[locus] = locusmap
+            entropy_map[interval] = locimap
+        #log.debug("ending sampled TA entropy map: %s", entropy_map)
         return entropy_map
 
 
     def get_ta_trait_evenness_iqv(self):
-        freqmap = self.get_ta_trait_frequencies()
-        popsize = self.model.agentgraph.number_of_nodes()
         entropy_map = {}
-        counts = self.ending_ta.get_counts_for_generation_intervals()
-        for interval, counts_by_locus in counts.items():
-            entropy_by_locus = dict()
-            for locus, counter in counts_by_locus.items():
-                freqlist = []
-                for trait, cnt in counter.items():
-                    freq = float(cnt) / (float(popsize ** 2) * float(interval))
-                    freqlist.append(freq)
-                    entropy_by_locus[locus] = diversity_iqv(freqlist)
-            entropy_map[interval] = entropy_by_locus
-        #log.debug("entropy_map: %s", entropy_map)
+        popsize = self.model.agentgraph.number_of_nodes()
+
+        for interval, counts_by_locus in self.ending_ssize_counts.items():
+            locimap = dict()
+
+            for locus, ssize_dict in counts_by_locus.items():
+                locusmap = dict()
+
+                for ssize, counter in ssize_dict.items():
+                    freqlist = [float(cnt) / float(ssize) for cnt in counter.values() if cnt > 0]
+
+                    locusmap[ssize] = diversity_iqv(freqlist)
+                locimap[locus] = locusmap
+            entropy_map[interval] = locimap
+        #log.debug("ending sampled TA iqv map: %s", entropy_map)
         return entropy_map
 
     def get_ta_slatkin_exact_probability(self):
         slatkin_map = {}
-        counts = self.ending_ta.get_counts_for_generation_intervals()
-        for interval, counts_by_locus in counts.items():
-            slatkin_by_locus = dict()
-            for locus, counter in counts_by_locus.items():
-                counts = [count for count in counter.values()]
-                slatkin_by_locus[locus] = slatkin_exact_test(counts)
-            slatkin_map[interval] = slatkin_by_locus
-        #log.debug("slatkin_map: %s", slatkin_map)
+
+        for interval, counts_by_locus in self.ending_ssize_counts.items():
+            locimap = dict()
+
+            for locus, ssize_dict in counts_by_locus.items():
+                locusmap = dict()
+
+                for ssize, counter in ssize_dict.items():
+                    count_list = [count for count in counter.values() if count > 0]
+                    locusmap[ssize] = slatkin_exact_test(count_list)
+                locimap[locus] = locusmap
+            slatkin_map[interval] = locimap
+        #log.debug("ending sampled TA slatkin map: %s", slatkin_map)
         return slatkin_map
 
+
     def get_ta_unlabeled_configuration_counts(self):
-        return self.ending_ta.get_configuration_counts_for_generation_intervals()
+        return self.config_ssize_counts
 
     def get_ta_unlabeled_frequency_lists(self):
-        counts = self.ending_ta.get_counts_for_generation_intervals()
-        # we use the measured, not configured population size in case we do population dynamics
-        popsize = self.model.agentgraph.number_of_nodes()
         freqmap = dict()
-        for interval, counts_by_locus in counts.items():
-            locifreq = []
-            # the value of the dict for each locus should be a Counter
-            for locus, counter in counts_by_locus.items():
-                locival = []
-                for trait, cnt in counter.items():
-                    freq = float(cnt) / (float(popsize ** 2) * float(interval))
-                    locival.append(freq)
-                locifreq.append(sorted(locival, reverse=True))
-            freqmap[interval] = locifreq
-            #log.debug("ending TA unlabeled frequencies: %s", freqmap)
+
+        for interval, counts_by_locus in self.ending_ssize_counts.items():
+            locimap = dict()
+
+            for locus, ssize_dict in counts_by_locus.items():
+                locusmap = dict()
+
+                for ssize, counter in ssize_dict.items():
+                    traits = []
+                    for trait, cnt in counter.items():
+                        freq = float(cnt) / float(ssize)
+                        traits.append(freq)
+
+                    locusmap[ssize] = sorted(traits, reverse=True)
+
+                locimap[locus] = locusmap
+            freqmap[interval] = locimap
+        #log.debug("ending sampled TA unlabeled freq map: %s", freqmap)
         return freqmap
 
+
     def get_ta_number_configurations(self):
-        counts = self.ending_ta.get_configuration_counts_for_generation_intervals()
-        num_config_map = dict()
-        for interval, map in counts.items():
-            num_config_map[interval] = len(map)
-        return num_config_map
+        ccount_richness = dict()
 
+        for interval, counts_by_ssize in self.config_ssize_counts.items():
+            interval_richness = dict()
 
-    def get_ta_unlableled_count_lists(self):
-        ulc_map = dict()
-        counts = self.ending_ta.get_counts_for_generation_intervals()
-        for interval, counts_by_locus in counts.items():
-            ulc_by_locus = dict()
-            for locus, counter in counts_by_locus.items():
-                counts = [count for count in counter.values()]
-                ulc_by_locus[locus] = [count for count in counter.values()]
-            ulc_map[interval] = ulc_by_locus
-        #log.debug("unlabeled counts: %s", ulc_map)
-        return ulc_map
+            for ssize, ccounts in counts_by_ssize.items():
+                interval_richness[ssize] = len(ccounts)
+
+            ccount_richness[interval] = interval_richness
+
+        #log.debug("ending sampled TA config richness: %s", ccount_richness)
+        return ccount_richness
 
 
     def get_ta_configuration_slatkin_test(self):
         slatkin_map = dict()
-        counts = self.ending_ta.get_configuration_counts_for_generation_intervals()
-        for interval, map in counts.items():
-            slatkin_map[interval] = slatkin_exact_test(sorted(map.values(), reverse=True))
+
+        for interval, counts_by_ssize in self.config_ssize_counts.items():
+            interval_slatkin = dict()
+
+            for ssize, ccounts in counts_by_ssize.items():
+                cc = [count for count in ccounts.values() if count > 0]
+                interval_slatkin[ssize] = slatkin_exact_test(cc)
+
+            slatkin_map[interval] = interval_slatkin
+
+        #log.debug("ending sampled TA config slatkin: %s", slatkin_map)
         return slatkin_map
 
     def get_ta_kandler_remaining_traits_per_locus(self):
-        start_counts = self.starting_ta.get_counts_for_generation_intervals()
-        #log.debug("start_counts: %s", start_counts)
-        end_counts = self.ending_ta.get_counts_for_generation_intervals()
-        #log.debug("end_counts: %s", start_counts)
-        remaining_by_interval = dict()
+        start_counts = self.starting_ssize_counts
+        end_counts = self.ending_ssize_counts
 
-        for interval, counts_by_locus in start_counts.items():
-            remaining = []
-            for locus, counter in counts_by_locus.items():
-                start_counter = start_counts[interval][locus]
-                end_counter = end_counts[interval][locus]
-                remaining_set = start_counter & end_counter
-                remaining.append(len(remaining_set))
-            remaining_by_interval[interval] = remaining
-        #log.debug("ta kandler remaining: %s", remaining_by_interval)
-        return remaining_by_interval
+        remaining_by_interval_ssize = dict()
+
+        for interval, counts_by_locus_ssize in start_counts.items():
+            ssize_map = dict()
+            for ss in self.ssize_list:
+                ssize_map[ss] = []
+
+            for locus, counts_by_ssize in counts_by_locus_ssize.items():
+                for ssize, counter in counts_by_ssize.items():
+                    start_counter = start_counts[interval][locus][ssize]
+                    end_counter = end_counts[interval][locus][ssize]
+                    remaining_set = start_counter & end_counter
+                    (ssize_map[ssize]).append(len(remaining_set))
+
+
+            remaining_by_interval_ssize[interval] = ssize_map
+        return remaining_by_interval_ssize
+
+
+
+
+
+    def get_ta_unlableled_count_lists(self):
+        pass
 
 
 
