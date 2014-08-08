@@ -27,6 +27,12 @@ import pytransmission.utils as ptu
 
 #################################################################################
 
+def convert_keys_to_string(dictionary):
+    """Recursively converts dictionary keys to strings."""
+    if not isinstance(dictionary, dict):
+        return dictionary
+    return dict((str(k), convert_keys_to_string(v))
+        for k, v in dictionary.items())
 
 def slatkin_exact_test(count_list):
     (prob, theta) = slatkin.montecarlo(100000, count_list, len(count_list))
@@ -233,8 +239,8 @@ class PopulationTraitAnalyzer(object):
         interval = self._snapshot_two_time - self._snapshot_one_time
         for locus in xrange(0, nf):
             remaining_set = self._snapshot_one[locus] & self._snapshot_two[locus]
-            log.debug("locus: %s snapshot one: %s  snapshot two: %s ", locus, self._snapshot_one[locus], self._snapshot_two[locus])
-            log.debug("locus: %s intersection: %s", locus, remaining_set)
+            #log.debug("locus: %s snapshot one: %s  snapshot two: %s ", locus, self._snapshot_one[locus], self._snapshot_two[locus])
+            #log.debug("locus: %s intersection: %s", locus, remaining_set)
             remaining_traits.append(len(remaining_set))
 
         return (interval, remaining_traits)
@@ -629,6 +635,7 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
 
     # decorate update from the superclass to pass its results to the list of time averaging objects
     def update(self, timestep):
+        #log.debug("entering TASTA update for step %s", timestep)
         super(TimeAveragedSampledTraitAnalyzer, self).update(timestep)
 
         # The TA trackers expect a map with loci as keys, and dicts as values, where the value
@@ -647,6 +654,7 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
             if tatracker.is_within_intervals(timestep):
                 # pass the count map to the tracker
                 tatracker.record_trait_count_sample(timestep,countmap,self.culture_counts)
+
 
 
     def take_sample_snapshot(self):
@@ -685,13 +693,19 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
             self.config_ssize_counts[interval] = ptu.get_sampled_dict_counts(self.ssize_list, ccounts)
 
 
-        log.debug("ending sampled snapshot of counts: %s", self.ending_ssize_counts)
-        log.debug("ending sampled snapshot of configs: %s", self.config_ssize_counts)
-        log.debug("starting sampled snapshot of counts: %s", self.starting_ssize_counts)
+        #log.debug("ending sampled snapshot of counts: %s", self.ending_ssize_counts)
+        #log.debug("ending sampled snapshot of configs: %s", self.config_ssize_counts)
+        #log.debug("starting sampled snapshot of counts: %s", self.starting_ssize_counts)
 
 
+    ########################### Statistics start here #################################
 
     def get_ta_trait_frequencies(self):
+        """
+        Calculates trait frequencies for each locus across all TA intervals and sample sizes
+
+        :return: nested dict of the form {interval: {locus: {ssize: {trait: frequency}}}}
+        """
         freqmap = dict()
 
         for interval, counts_by_locus in self.ending_ssize_counts.items():
@@ -705,20 +719,30 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
                     for trait, cnt in counter.items():
                         freq = float(cnt) / float(ssize)
                         traits[trait] = freq
-                    locusmap[ssize] = traits
+                    locusmap[str(ssize)] = traits
 
-                locimap[locus] = locusmap
-            freqmap[interval] = locimap
+                locimap[str(locus)] = locusmap
+            freqmap[str(interval)] = locimap
         #log.debug("ending sampled TA frequency map: %s", freqmap)
         return freqmap
 
 
 
     def get_ta_trait_counts(self):
-        return self.ending_ssize_counts
+        """
+        Returns trait counts for each locus across all TA intervals and sample sizes
+
+        :return: nested dict of the form {interval: {locus: {ssize: {trait: count}}}}
+        """
+        return convert_keys_to_string(self.ending_ssize_counts)
 
 
     def get_ta_trait_richness(self):
+        """
+        Calculates trait richness for each locus across all TA intervals and sample sizes
+
+        :return: nested dict of the form {interval: {locus: {ssize: richness}}}
+        """
         richness_map = {}
         popsize = self.model.agentgraph.number_of_nodes()
 
@@ -730,14 +754,19 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
 
                 for ssize, counter in ssize_dict.items():
                     nt = len([count for count in counter.values() if count > 0])
-                    locusmap[ssize] = nt
-                locimap[locus] = locusmap
-            richness_map[interval] = locimap
+                    locusmap[str(ssize)] = nt
+                locimap[str(locus)] = locusmap
+            richness_map[str(interval)] = locimap
         #log.debug("ending sampled TA richness map: %s", richness_map)
         return richness_map
 
 
     def get_ta_trait_evenness_entropy(self):
+        """
+        Calculates the Shannon entropy evenness statistic for each locus across all TA intervals and sample sizes.
+
+        :return: nested dict of the form {interval: {locus: {ssize: entropy value}}}
+        """
         entropy_map = {}
         popsize = self.model.agentgraph.number_of_nodes()
 
@@ -750,14 +779,19 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
                 for ssize, counter in ssize_dict.items():
                     freqlist = [float(cnt) / float(ssize) for cnt in counter.values() if cnt > 0]
 
-                    locusmap[ssize] = diversity_shannon_entropy(freqlist)
-                locimap[locus] = locusmap
-            entropy_map[interval] = locimap
+                    locusmap[str(ssize)] = diversity_shannon_entropy(freqlist)
+                locimap[str(locus)] = locusmap
+            entropy_map[str(interval)] = locimap
         #log.debug("ending sampled TA entropy map: %s", entropy_map)
         return entropy_map
 
 
     def get_ta_trait_evenness_iqv(self):
+        """
+        Calculates the IQV evenness statistic for each locus across all TA intervals and sample sizes.
+
+        :return: nested dict of the form {interval: {locus: {ssize: IQV value}}}
+        """
         entropy_map = {}
         popsize = self.model.agentgraph.number_of_nodes()
 
@@ -770,13 +804,60 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
                 for ssize, counter in ssize_dict.items():
                     freqlist = [float(cnt) / float(ssize) for cnt in counter.values() if cnt > 0]
 
-                    locusmap[ssize] = diversity_iqv(freqlist)
-                locimap[locus] = locusmap
-            entropy_map[interval] = locimap
+                    locusmap[str(ssize)] = diversity_iqv(freqlist)
+                locimap[str(locus)] = locusmap
+            entropy_map[str(interval)] = locimap
         #log.debug("ending sampled TA iqv map: %s", entropy_map)
         return entropy_map
 
+    def get_ta_configuration_evenness_iqv(self):
+        """
+        Calculates the IQV evenness for configurations of traits, for all TA intervals and sample sizes.
+
+        :return: nested dict of the form {interval: { ssize: iqv value }}
+        """
+        entropy_map = dict()
+
+        for interval, counts_by_ssize in self.config_ssize_counts.items():
+            interval_d = dict()
+
+            for ssize, ccounts in counts_by_ssize.items():
+                freqlist = [float(cnt) / float(ssize) for cnt in ccounts.values() if cnt > 0]
+                interval_d[str(ssize)] = diversity_iqv(freqlist)
+
+            entropy_map[str(interval)] = interval_d
+
+        #log.debug("ending sampled TA config iqv: %s", entropy_map)
+        return entropy_map
+
+
+
+    def get_ta_configuration_evenness_entropy(self):
+        """
+        Calculates the Shannon entropy for configurations of traits, for all TA intervals and sample sizes.
+
+        :return: nested dict of the form {interval: { ssize: entropy value }}
+        """
+        entropy_map = dict()
+
+        for interval, counts_by_ssize in self.config_ssize_counts.items():
+            interval_d = dict()
+
+            for ssize, ccounts in counts_by_ssize.items():
+                freqlist = [float(cnt) / float(ssize) for cnt in ccounts.values() if cnt > 0]
+                interval_d[str(ssize)] = diversity_shannon_entropy(freqlist)
+
+            entropy_map[str(interval)] = interval_d
+
+        #log.debug("ending sampled TA config entropy: %s", entropy_map)
+        return entropy_map
+
     def get_ta_slatkin_exact_probability(self):
+        """
+        Calculates the Slatkin exact test for each locus across all TA intervals and sample sizes.
+
+        :return: nested dict of the form {interval: {locus: {ssize: Slatkin p-value}}}
+        """
         slatkin_map = {}
 
         for interval, counts_by_locus in self.ending_ssize_counts.items():
@@ -787,17 +868,30 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
 
                 for ssize, counter in ssize_dict.items():
                     count_list = [count for count in counter.values() if count > 0]
-                    locusmap[ssize] = slatkin_exact_test(count_list)
-                locimap[locus] = locusmap
-            slatkin_map[interval] = locimap
+                    locusmap[str(ssize)] = slatkin_exact_test(count_list)
+                locimap[str(locus)] = locusmap
+            slatkin_map[str(interval)] = locimap
         #log.debug("ending sampled TA slatkin map: %s", slatkin_map)
         return slatkin_map
 
 
     def get_ta_unlabeled_configuration_counts(self):
-        return self.config_ssize_counts
+        """
+        Returns counts of trait configurations, across all TA intervals and sample sizes.
+
+        :return: nested dict of the form {interval: {ssize: {configuration: count}}}
+        """
+        return convert_keys_to_string(self.config_ssize_counts)
 
     def get_ta_unlabeled_frequency_lists(self):
+        """
+        Returns the unlabeled frequencies of traits, sorted in descending order, for all TA intervals,
+        sample sizes, and for each locus.  "Unlabeled" frequencies simply record the frequencies
+        themselves, without identifying the exact traits to which they belong; this is commonly used
+        in population genetics models for K- and infinite-alleles models (see Ewens 2004).
+
+        :return: nested dict of the form {interval: {locus: { ssize: [frequency list]}}}
+        """
         freqmap = dict()
 
         for interval, counts_by_locus in self.ending_ssize_counts.items():
@@ -812,30 +906,40 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
                         freq = float(cnt) / float(ssize)
                         traits.append(freq)
 
-                    locusmap[ssize] = sorted(traits, reverse=True)
+                    locusmap[str(ssize)] = sorted(traits, reverse=True)
 
-                locimap[locus] = locusmap
-            freqmap[interval] = locimap
+                locimap[str(locus)] = locusmap
+            freqmap[str(interval)] = locimap
         #log.debug("ending sampled TA unlabeled freq map: %s", freqmap)
         return freqmap
 
 
     def get_ta_number_configurations(self):
+        """
+        Calculates the number of configurations of traits, for all TA intervals and sample sizes.
+
+        :return: nested dict of the form {interval: {ssize: richness}}
+        """
         ccount_richness = dict()
 
         for interval, counts_by_ssize in self.config_ssize_counts.items():
             interval_richness = dict()
 
             for ssize, ccounts in counts_by_ssize.items():
-                interval_richness[ssize] = len(ccounts)
+                interval_richness[str(ssize)] = len(ccounts)
 
-            ccount_richness[interval] = interval_richness
+            ccount_richness[str(interval)] = interval_richness
 
         #log.debug("ending sampled TA config richness: %s", ccount_richness)
         return ccount_richness
 
 
     def get_ta_configuration_slatkin_test(self):
+        """
+        Calculates the Slatkin exact test for configurations of traits, for all TA intervals and sample sizes.
+
+        :return: nested dict of the form {interval: { ssize: Slatkin p-value }}
+        """
         slatkin_map = dict()
 
         for interval, counts_by_ssize in self.config_ssize_counts.items():
@@ -843,14 +947,21 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
 
             for ssize, ccounts in counts_by_ssize.items():
                 cc = [count for count in ccounts.values() if count > 0]
-                interval_slatkin[ssize] = slatkin_exact_test(cc)
+                interval_slatkin[str(ssize)] = slatkin_exact_test(cc)
 
-            slatkin_map[interval] = interval_slatkin
+            slatkin_map[str(interval)] = interval_slatkin
 
         #log.debug("ending sampled TA config slatkin: %s", slatkin_map)
         return slatkin_map
 
     def get_ta_kandler_remaining_traits_per_locus(self):
+        """
+        Calculates, for all loci and all TA intervals, over all sample sizes, the number of traits which survive
+        between two samples.  Survival is always calculated over "paired" samples which share the same parameters
+        (e.g., sample size and TA interval).
+
+        :return: nested dict and list of the form {interval: {ssize: [remaining for locus 0, ... locus N]}}
+        """
         start_counts = self.starting_ssize_counts
         end_counts = self.ending_ssize_counts
 
@@ -866,10 +977,10 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
                     start_counter = start_counts[interval][locus][ssize]
                     end_counter = end_counts[interval][locus][ssize]
                     remaining_set = start_counter & end_counter
-                    (ssize_map[ssize]).append(len(remaining_set))
+                    (ssize_map[str(ssize)]).append(len(remaining_set))
 
 
-            remaining_by_interval_ssize[interval] = ssize_map
+            remaining_by_interval_ssize[str(interval)] = ssize_map
         return remaining_by_interval_ssize
 
 

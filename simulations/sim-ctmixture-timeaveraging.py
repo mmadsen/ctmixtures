@@ -129,8 +129,12 @@ def main():
     # initialize a dynamics
     dynamics = dynamics_constructor(simconfig,model,innovation_rule)
 
-    tfa = analysis.TimeAveragedPopulationTraitAnalyzer(model, starting_ta_sample, ending_ta_sample)
+    tfa = analysis.TimeAveragedSampledTraitAnalyzer(model, starting_ta_sample, ending_ta_sample)
     ssfa = analysis.SampledTraitAnalyzer(model)
+
+
+    log.info("Kandler tracking interval start: %s  stop: %s", kandler_start_time_nota, kandler_stop_time_nota)
+
 
     log.info("Starting %s", simconfig.sim_id)
 
@@ -138,7 +142,7 @@ def main():
 
         timestep = dynamics.update()
 
-        if (timestep % 100000) == 0:
+        if (timestep % 10000) == 0:
             log.debug("time: %s  copies by locus: %s  innovations: %s innov by locus: %s",
                       timestep, model.get_interactions_by_locus(), model.get_innovations(),
                       model.get_innovations_by_locus())
@@ -162,6 +166,10 @@ def main():
         # and kandler & shennan trait survival for the time averaged samples.
         # finally, record simulation timing so we can track performance and plan blocks of simulation runs
         if timestep >= simconfig.maxtime:
+
+            # sample from the time averagers, for later statistics calculation
+            tfa.take_sample_snapshot()
+
             utils.record_final_samples(tfa, ssfa, simconfig, timestep)
             endtime = time()
             elapsed = endtime - start

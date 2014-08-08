@@ -45,7 +45,17 @@ def sample_mixture_model(tfa, ssfa, config, timestep):
                                    ssfa.get_slatkin_by_ssize(),
                                    ssfa.get_richness_by_ssize(),
                                    None, #kandler interval
-                                   None #kandler_remaining_count
+                                   None, #kandler_remaining_count
+                                   None, # TAssize fields follow
+                                   None,
+                                   None,
+                                   None,
+                                   None,
+                                   None,
+                                   None,
+                                   None,
+                                   None,
+                                   None
     )
 
 
@@ -87,6 +97,17 @@ def record_final_samples(tfa, ssfa, config, timestep):
                                    ssfa.get_slatkin_by_ssize(),
                                    ssfa.get_richness_by_ssize(),
                                    interval,
-                                   remaining_traits
-
+                                   remaining_traits,
+                                   tfa.get_ta_unlabeled_frequency_lists(),
+                                   tfa.get_ta_trait_richness(),
+                                   tfa.get_ta_slatkin_exact_probability(),
+                                   tfa.get_ta_trait_evenness_entropy(),
+                                   tfa.get_ta_trait_evenness_iqv(),
+                                   tfa.get_ta_unlabeled_configuration_counts(),
+                                   tfa.get_ta_number_configurations(),
+                                   tfa.get_ta_configuration_slatkin_test(),
+                                   tfa.get_ta_configuration_evenness_entropy(),
+                                   tfa.get_ta_configuration_evenness_iqv()
     )
+
+

@@ -39,7 +39,10 @@ def store_stats_mixture_model(config, timestep, num_configs,
                                  unlabeled_freq, unlabeled_count, conf_slatkin,richness,
                                  unlabeled_freq_ssize,unlabeled_count_ssize,unlabeled_config_ssize,
                                  config_slatkin_ssize,entropy_ssize,iqv_ssize,slatkin_ssize,richness_ssize,
-                                 kandler_interval,kandler_remaining_count):
+                                 kandler_interval,kandler_remaining_count,unlab_freq_tassize,
+                                 richness_tassize,slatkin_tassize,entropy_tassize,iqv_tassize,
+                                 unlab_ccount_tassize,config_richness_tassize,config_slatkin_tassize,
+                                 config_entropy_tassize,config_iqv_tassize):
     """Stores the parameters and metadata for a simulation run in the database.
 
 
@@ -79,6 +82,16 @@ def store_stats_mixture_model(config, timestep, num_configs,
         richness_ssize = richness_ssize,
         kandler_interval = kandler_interval,
         kandler_remaining_count = kandler_remaining_count,
+        unlabeled_freq_ta_ssize = unlab_freq_tassize,
+        richness_ta_ssize = richness_tassize,
+        slatkin_ta_ssize = slatkin_tassize,
+        entropy_ta_ssize = entropy_tassize,
+        iqv_ta_ssize = iqv_tassize,
+        unlabeled_config_counts_ta_ssize = unlab_ccount_tassize,
+        num_configurations_ta_ssize = config_richness_tassize,
+        config_slatkin_ta_ssize = config_slatkin_tassize,
+        config_entropy_ta_ssize = config_entropy_tassize,
+        config_iqv_ta_ssize = config_iqv_tassize
         )).m.insert()
     return True
 
@@ -129,7 +142,19 @@ class MixtureModelStats(Document):
     # Kandler remaining traits observations
     kandler_interval = Field(int)
     kandler_remaining_count = Field([int])
+    # results for TA intervals over all sample sizes
+    unlabeled_freq_ta_ssize = Field(schema.Anything)
+    richness_ta_ssize = Field(schema.Anything)
+    slatkin_ta_ssize = Field(schema.Anything)
+    entropy_ta_ssize = Field(schema.Anything)
+    iqv_ta_ssize = Field(schema.Anything)
+    unlabeled_config_counts_ta_ssize = Field(schema.Anything)
+    num_configurations_ta_ssize = Field(schema.Anything)
+    config_slatkin_ta_ssize = Field(schema.Anything)
+    config_entropy_ta_ssize = Field(schema.Anything)
+    config_iqv_ta_ssize = Field(schema.Anything)
 
 
+# TODO - add final set of fields to storage function above
 
 

@@ -171,6 +171,12 @@ class TAStatisticsTest(unittest.TestCase):
         kandler = tfa.get_ta_kandler_remaining_traits_per_locus()
         log.info("kandler remaining: %s", kandler)
 
+        centropy = tfa.get_ta_configuration_evenness_entropy()
+        log.info("ending config entropy: %s", centropy)
+
+        centropy = tfa.get_ta_configuration_evenness_iqv()
+        log.info("ending config iqv: %s", centropy)
+
 
         # can't test equality because we're assigning initial traits randomly
         # for locus in richness:
