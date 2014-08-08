@@ -63,6 +63,7 @@ def setup():
     simconfig.popsize = int(args.popsize)
     mut = pg.moran_mutation_rate_from_theta(float(args.popsize), float(args.innovationrate))
     simconfig.innovation_rate = float(args.numloci) * mut
+    simconfig.configured_innovation_rate = float(args.innovationrate)
     log.debug("configured theta = %s, using numloci %s * per-locus mutation rate %s = all-loci innovation rate: %s", args.innovationrate, args.numloci, mut, simconfig.innovation_rate)
 
 
@@ -91,6 +92,12 @@ def main():
     ending_indextime = simconfig.maxtime - (max_ta_interval * simconfig.popsize)
     starting_indextime = ending_indextime - kandler_interval_timesteps
 
+    log.debug("max TA interval: %s", max_ta_interval)
+    log.debug("kandler generations: %s", kandler_interval_in_generations)
+    log.debug("ending indextime: %s", ending_indextime)
+    log.debug("starting indextime: %s", starting_indextime)
+
+
     log.debug("Configuring CT Mixture Model with structure class: %s graph factory: %s interaction rule: %s", simconfig.POPULATION_STRUCTURE_CLASS, simconfig.NETWORK_FACTORY_CLASS, simconfig.INTERACTION_RULE_CLASS)
 
 
@@ -109,14 +116,18 @@ def main():
 
     # construct two time averaging objects
     starting_ta_sample = timeaveraging_constructor(starting_indextime, ta_interval_list, simconfig.popsize, simconfig.num_features, ending_interval=False)
-    ending_ta_sample = timeaveraging_constructor(starting_indextime, ta_interval_list, simconfig.popsize, simconfig.num_features, ending_interval=True)
+    ending_ta_sample = timeaveraging_constructor(ending_indextime, ta_interval_list, simconfig.popsize, simconfig.num_features, ending_interval=True)
 
     # calculate times for various sampling events
     earliest_sample_time = starting_ta_sample.get_earliest_tick_for_all_intervals()
     kandler_start_time_nota = starting_ta_sample.get_latest_tick_for_all_intervals()
     kandler_stop_time_nota = ending_ta_sample.get_earliest_tick_for_all_intervals()
 
-
+    log.debug("starting TA sampler intervals: %s", starting_ta_sample.get_interval_tuples())
+    log.debug("ending TA sampler intervals: %s", ending_ta_sample.get_interval_tuples())
+    log.debug("earliest sample time: %s", earliest_sample_time)
+    log.debug("kandler interval start time: %s", kandler_start_time_nota)
+    log.debug("kandler interval stop time: %s", kandler_stop_time_nota)
 
     model = model_constructor(simconfig, graph_factory, trait_factory)
     interaction_rule_list = utils.construct_rule_objects(interaction_rule_list, model)
@@ -166,10 +177,6 @@ def main():
         # and kandler & shennan trait survival for the time averaged samples.
         # finally, record simulation timing so we can track performance and plan blocks of simulation runs
         if timestep >= simconfig.maxtime:
-
-            # sample from the time averagers, for later statistics calculation
-            tfa.take_sample_snapshot()
-
             utils.record_final_samples(tfa, ssfa, simconfig, timestep)
             endtime = time()
             elapsed = endtime - start

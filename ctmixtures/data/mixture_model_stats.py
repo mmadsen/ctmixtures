@@ -42,7 +42,7 @@ def store_stats_mixture_model(config, timestep, num_configs,
                                  kandler_interval,kandler_remaining_count,unlab_freq_tassize,
                                  richness_tassize,slatkin_tassize,entropy_tassize,iqv_tassize,
                                  unlab_ccount_tassize,config_richness_tassize,config_slatkin_tassize,
-                                 config_entropy_tassize,config_iqv_tassize):
+                                 config_entropy_tassize,config_iqv_tassize,kandler_remaining_tassize):
     """Stores the parameters and metadata for a simulation run in the database.
 
 
@@ -60,7 +60,7 @@ def store_stats_mixture_model(config, timestep, num_configs,
         init_traits_per_feature = config.num_traits,
         conformism_strength = config.conformism_strength,
         anticonformism_strength = config.anticonformism_strength,
-        innovation_rate = config.innovation_rate,
+        innovation_rate = config.configured_innovation_rate,
         sample_size = config.SAMPLE_SIZES_STUDIED,
         population_size = config.popsize,
         slatkin_exact = slatkin,
@@ -91,7 +91,8 @@ def store_stats_mixture_model(config, timestep, num_configs,
         num_configurations_ta_ssize = config_richness_tassize,
         config_slatkin_ta_ssize = config_slatkin_tassize,
         config_entropy_ta_ssize = config_entropy_tassize,
-        config_iqv_ta_ssize = config_iqv_tassize
+        config_iqv_ta_ssize = config_iqv_tassize,
+        kandler_remaining_tassize = kandler_remaining_tassize
         )).m.insert()
     return True
 
@@ -153,6 +154,7 @@ class MixtureModelStats(Document):
     config_slatkin_ta_ssize = Field(schema.Anything)
     config_entropy_ta_ssize = Field(schema.Anything)
     config_iqv_ta_ssize = Field(schema.Anything)
+    kandler_remaining_tassize = Field(schema.Anything)
 
 
 # TODO - add final set of fields to storage function above

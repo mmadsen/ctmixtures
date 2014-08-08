@@ -383,6 +383,14 @@ class MixtureConfiguration(BaseConfiguration):
         self._innovation_rate = r
 
     @property
+    def configured_innovation_rate(self):
+        return self._cinnovation_rate
+
+    @configured_innovation_rate.setter
+    def configured_innovation_rate(self, r):
+        self._cinnovation_rate = r
+
+    @property
     def num_features(self):
         return self._num_features
 

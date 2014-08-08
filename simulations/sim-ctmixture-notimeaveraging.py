@@ -64,6 +64,7 @@ def setup():
     simconfig.popsize = int(args.popsize)
     mut = pg.moran_mutation_rate_from_theta(float(args.popsize), float(args.innovationrate))
     simconfig.innovation_rate = float(args.numloci) * mut
+    simconfig.configured_innovation_rate = float(args.innovationrate)
     log.debug("configured theta = %s, using numloci %s * per-locus mutation rate %s = all-loci innovation rate: %s", args.innovationrate, args.numloci, mut, simconfig.innovation_rate)
 
 

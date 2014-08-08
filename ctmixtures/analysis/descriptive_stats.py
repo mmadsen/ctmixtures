@@ -11,10 +11,8 @@ Description here
 import logging as log
 from collections import defaultdict
 import slatkin
-import numpy as np
 import random
 import math as m
-import pprint as pp
 import pytransmission.utils as ptu
 
 
@@ -96,6 +94,21 @@ class PopulationTraitAnalyzer(object):
         # snapshots for calculating trait survival between two points or intervals
         self._snapshot_one = dict()
         self._snapshot_two = dict()
+
+    def __getattr__(self, name):
+        """
+        We want to simply return None to an unknown method call, which might occur if we
+        use analyzers with a subset of the functionality but the full database schema.
+
+        :param name:
+        :return: constant None
+        """
+        def wrapper(*args, **kwargs):
+            log.info("call for nonexistent method name: %s", name)
+            return None
+        return wrapper
+
+
 
     def get_trait_frequencies(self):
         return self.freq
@@ -274,6 +287,19 @@ class TimeAveragedPopulationTraitAnalyzer(PopulationTraitAnalyzer):
         self.ta_trackers.append(ending_timeaverager)
         self.ending_ta = ending_timeaverager
         self.starting_ta = starting_timeaverager
+
+    def __getattr__(self, name):
+        """
+        We want to simply return None to an unknown method call, which might occur if we
+        use analyzers with a subset of the functionality but the full database schema.
+
+        :param name:
+        :return: constant None
+        """
+        def wrapper(*args, **kwargs):
+            log.info("call for nonexistent method name: %s", name)
+            return None
+        return wrapper
 
     # decorate update from the superclass to pass its results to the list of time averaging objects
     def update(self, timestep):
@@ -470,6 +496,18 @@ class SampledTraitAnalyzer(object):
         self.sample_sizes = self.sc.SAMPLE_SIZES_STUDIED
         self.total_traits = model.agentgraph.number_of_nodes()
 
+    def __getattr__(self, name):
+        """
+        We want to simply return None to an unknown method call, which might occur if we
+        use analyzers with a subset of the functionality but the full database schema.
+
+        :param name:
+        :return: constant None
+        """
+        def wrapper(*args, **kwargs):
+            log.info("call for nonexistent method name: %s", name)
+            return None
+        return wrapper
 
     def update(self, timestep):
         """
@@ -632,6 +670,20 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
         self.ending_ta = ending_timeaverager
         self.starting_ta = starting_timeaverager
         self.ssize_list = model.simconfig.SAMPLE_SIZES_STUDIED
+
+    def __getattr__(self, name):
+        """
+        We want to simply return None to an unknown method call, which might occur if we
+        use analyzers with a subset of the functionality but the full database schema.
+
+        :param name:
+        :return: constant None
+        """
+        def wrapper(*args, **kwargs):
+            log.info("call for nonexistent method name: %s", name)
+            return None
+        return wrapper
+
 
     # decorate update from the superclass to pass its results to the list of time averaging objects
     def update(self, timestep):

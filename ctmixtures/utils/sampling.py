@@ -55,6 +55,7 @@ def sample_mixture_model(tfa, ssfa, config, timestep):
                                    None,
                                    None,
                                    None,
+                                   None,
                                    None
     )
 
@@ -73,6 +74,10 @@ def stop_kandler_remaining_trait_tracking(tfa, ssfa, timestep):
 def record_final_samples(tfa, ssfa, config, timestep):
     tfa.update(timestep)
     ssfa.update(timestep)
+    # sample from the time averagers, for later statistics calculation
+    # only applies to the TA and sampled analyzer, the others will simply log an
+    # unknown method call
+    tfa.take_sample_snapshot()
 
     (interval, remaining_traits) = tfa.get_kandler_remaining_traits_per_locus()
 
@@ -107,7 +112,8 @@ def record_final_samples(tfa, ssfa, config, timestep):
                                    tfa.get_ta_number_configurations(),
                                    tfa.get_ta_configuration_slatkin_test(),
                                    tfa.get_ta_configuration_evenness_entropy(),
-                                   tfa.get_ta_configuration_evenness_iqv()
+                                   tfa.get_ta_configuration_evenness_iqv(),
+                                   tfa.get_ta_kandler_remaining_traits_per_locus()
     )
 
 
