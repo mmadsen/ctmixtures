@@ -314,11 +314,11 @@ class TimeAveragedPopulationTraitAnalyzer(PopulationTraitAnalyzer):
                 locimap[locus] = locusmap
             freqmap[interval] = locimap
         #log.debug("ending TA frequency map: %s", freqmap)
-        return freqmap
+        return convert_keys_to_string(freqmap)
 
 
     def get_ta_trait_counts(self):
-        return self.ending_ta.get_counts_for_generation_intervals()
+        return convert_keys_to_string(self.ending_ta.get_counts_for_generation_intervals())
 
 
     def get_ta_trait_richness(self):
@@ -332,7 +332,7 @@ class TimeAveragedPopulationTraitAnalyzer(PopulationTraitAnalyzer):
                 richness_by_locus[locus] = nt
             richness_map[interval] = richness_by_locus
         #log.debug("richness_map: %s", richness_map)
-        return richness_map
+        return convert_keys_to_string(richness_map)
 
 
     def get_ta_trait_evenness_entropy(self):
@@ -350,7 +350,7 @@ class TimeAveragedPopulationTraitAnalyzer(PopulationTraitAnalyzer):
                     entropy_by_locus[locus] = diversity_shannon_entropy(freqlist)
             entropy_map[interval] = entropy_by_locus
         #log.debug("entropy_map: %s", entropy_map)
-        return entropy_map
+        return convert_keys_to_string(entropy_map)
 
 
     def get_ta_trait_evenness_iqv(self):
@@ -368,7 +368,7 @@ class TimeAveragedPopulationTraitAnalyzer(PopulationTraitAnalyzer):
                     entropy_by_locus[locus] = diversity_iqv(freqlist)
             entropy_map[interval] = entropy_by_locus
         #log.debug("entropy_map: %s", entropy_map)
-        return entropy_map
+        return convert_keys_to_string(entropy_map)
 
     def get_ta_slatkin_exact_probability(self):
         slatkin_map = {}
@@ -380,10 +380,10 @@ class TimeAveragedPopulationTraitAnalyzer(PopulationTraitAnalyzer):
                 slatkin_by_locus[locus] = slatkin_exact_test(counts)
             slatkin_map[interval] = slatkin_by_locus
         #log.debug("slatkin_map: %s", slatkin_map)
-        return slatkin_map
+        return convert_keys_to_string(slatkin_map)
 
     def get_ta_unlabeled_configuration_counts(self):
-        return self.ending_ta.get_configuration_counts_for_generation_intervals()
+        return convert_keys_to_string(self.ending_ta.get_configuration_counts_for_generation_intervals())
 
     def get_ta_unlabeled_frequency_lists(self):
         counts = self.ending_ta.get_counts_for_generation_intervals()
@@ -401,14 +401,14 @@ class TimeAveragedPopulationTraitAnalyzer(PopulationTraitAnalyzer):
                 locifreq.append(sorted(locival, reverse=True))
             freqmap[interval] = locifreq
             #log.debug("ending TA unlabeled frequencies: %s", freqmap)
-        return freqmap
+        return convert_keys_to_string(freqmap)
 
     def get_ta_number_configurations(self):
         counts = self.ending_ta.get_configuration_counts_for_generation_intervals()
         num_config_map = dict()
         for interval, map in counts.items():
             num_config_map[interval] = len(map)
-        return num_config_map
+        return convert_keys_to_string(num_config_map)
 
 
     def get_ta_unlableled_count_lists(self):
@@ -421,7 +421,7 @@ class TimeAveragedPopulationTraitAnalyzer(PopulationTraitAnalyzer):
                 ulc_by_locus[locus] = [count for count in counter.values()]
             ulc_map[interval] = ulc_by_locus
         #log.debug("unlabeled counts: %s", ulc_map)
-        return ulc_map
+        return convert_keys_to_string(ulc_map)
 
 
     def get_ta_configuration_slatkin_test(self):
@@ -429,7 +429,7 @@ class TimeAveragedPopulationTraitAnalyzer(PopulationTraitAnalyzer):
         counts = self.ending_ta.get_configuration_counts_for_generation_intervals()
         for interval, map in counts.items():
             slatkin_map[interval] = slatkin_exact_test(sorted(map.values(), reverse=True))
-        return slatkin_map
+        return convert_keys_to_string(slatkin_map)
 
     def get_ta_kandler_remaining_traits_per_locus(self):
         start_counts = self.starting_ta.get_counts_for_generation_intervals()
@@ -447,7 +447,7 @@ class TimeAveragedPopulationTraitAnalyzer(PopulationTraitAnalyzer):
                 remaining.append(len(remaining_set))
             remaining_by_interval[interval] = remaining
         #log.debug("ta kandler remaining: %s", remaining_by_interval)
-        return remaining_by_interval
+        return convert_keys_to_string(remaining_by_interval)
 
 
 
@@ -532,75 +532,75 @@ class SampledTraitAnalyzer(object):
     def get_unlabeled_freq_by_ssize(self):
         res = dict()
         for ssize in self.sample_sizes:
-            res[str(ssize)] = []
+            res[ssize] = []
             for locus in self.freq[ssize]:
                 vals = sorted(locus.values(),reverse=True)
-                res[str(ssize)].append(vals)
-        return res
+                res[ssize].append(vals)
+        return convert_keys_to_string(res)
 
 
     def get_unlabeled_counts_by_ssize(self):
         res = dict()
         for ssize in self.sample_sizes:
-            res[str(ssize)] = []
+            res[ssize] = []
             for locus in self.counts[ssize]:
                 vals = sorted(locus.values(),reverse=True)
-                res[str(ssize)].append(vals)
-        return res
+                res[ssize].append(vals)
+        return convert_keys_to_string(res)
 
     def get_unlabeled_configuration_counts_by_ssize(self):
         res = dict()
         for ssize in self.sample_sizes:
-            res[str(ssize)] = sorted(self.culture_counts[ssize].values(), reverse=True)
-        return res
+            res[ssize] = sorted(self.culture_counts[ssize].values(), reverse=True)
+        return convert_keys_to_string(res)
 
     def get_num_configurations_by_ssize(self):
         res = dict()
         for ssize in self.sample_sizes:
-            res[str(ssize)] = len(self.culture_counts[ssize])
-        return res
+            res[ssize] = len(self.culture_counts[ssize])
+        return convert_keys_to_string(res)
 
     def get_configuration_slatkin_by_ssize(self):
         res = dict()
         for ssize in self.sample_sizes:
             cnt = sorted(self.culture_counts[ssize].values(), reverse=True)
-            res[str(ssize)] = slatkin_exact_test(cnt)
-        return res
+            res[ssize] = slatkin_exact_test(cnt)
+        return convert_keys_to_string(res)
 
     def get_entropy_by_ssize(self):
         res = dict()
         for ssize in self.sample_sizes:
-            res[str(ssize)] = []
+            res[ssize] = []
             for locus in self.freq[ssize]:
-                res[str(ssize)].append(diversity_shannon_entropy(locus.values()))
-        return res
+                res[ssize].append(diversity_shannon_entropy(locus.values()))
+        return convert_keys_to_string(res)
 
 
     def get_iqv_by_ssize(self):
         res = dict()
         for ssize in self.sample_sizes:
-            res[str(ssize)] = []
+            res[ssize] = []
             for locus in self.freq[ssize]:
-                res[str(ssize)].append(diversity_iqv(locus.values()))
-        return res
+                res[ssize].append(diversity_iqv(locus.values()))
+        return convert_keys_to_string(res)
 
 
     def get_richness_by_ssize(self):
         res = dict()
         for ssize in self.sample_sizes:
-            res[str(ssize)] = []
+            res[ssize] = []
             for locus in self.counts[ssize]:
-                res[str(ssize)].append(len([freq for freq in locus.values() if freq > 0]))
-        return res
+                res[ssize].append(len([freq for freq in locus.values() if freq > 0]))
+        return convert_keys_to_string(res)
 
     def get_slatkin_by_ssize(self):
         res = dict()
         for ssize in self.sample_sizes:
-            res[str(ssize)] = []
+            res[ssize] = []
             for locus in self.counts[ssize]:
                 cnt = sorted(locus.values(), reverse=True)
-                res[str(ssize)].append(slatkin_exact_test(cnt))
-        return res
+                res[ssize].append(slatkin_exact_test(cnt))
+        return convert_keys_to_string(res)
 
 
 #################################################################################
@@ -719,12 +719,12 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
                     for trait, cnt in counter.items():
                         freq = float(cnt) / float(ssize)
                         traits[trait] = freq
-                    locusmap[str(ssize)] = traits
+                    locusmap[ssize] = traits
 
-                locimap[str(locus)] = locusmap
-            freqmap[str(interval)] = locimap
+                locimap[locus] = locusmap
+            freqmap[interval] = locimap
         #log.debug("ending sampled TA frequency map: %s", freqmap)
-        return freqmap
+        return convert_keys_to_string(freqmap)
 
 
 
@@ -754,11 +754,11 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
 
                 for ssize, counter in ssize_dict.items():
                     nt = len([count for count in counter.values() if count > 0])
-                    locusmap[str(ssize)] = nt
-                locimap[str(locus)] = locusmap
-            richness_map[str(interval)] = locimap
+                    locusmap[ssize] = nt
+                locimap[locus] = locusmap
+            richness_map[interval] = locimap
         #log.debug("ending sampled TA richness map: %s", richness_map)
-        return richness_map
+        return convert_keys_to_string(richness_map)
 
 
     def get_ta_trait_evenness_entropy(self):
@@ -779,11 +779,11 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
                 for ssize, counter in ssize_dict.items():
                     freqlist = [float(cnt) / float(ssize) for cnt in counter.values() if cnt > 0]
 
-                    locusmap[str(ssize)] = diversity_shannon_entropy(freqlist)
-                locimap[str(locus)] = locusmap
-            entropy_map[str(interval)] = locimap
+                    locusmap[ssize] = diversity_shannon_entropy(freqlist)
+                locimap[locus] = locusmap
+            entropy_map[interval] = locimap
         #log.debug("ending sampled TA entropy map: %s", entropy_map)
-        return entropy_map
+        return convert_keys_to_string(entropy_map)
 
 
     def get_ta_trait_evenness_iqv(self):
@@ -804,11 +804,11 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
                 for ssize, counter in ssize_dict.items():
                     freqlist = [float(cnt) / float(ssize) for cnt in counter.values() if cnt > 0]
 
-                    locusmap[str(ssize)] = diversity_iqv(freqlist)
-                locimap[str(locus)] = locusmap
-            entropy_map[str(interval)] = locimap
+                    locusmap[ssize] = diversity_iqv(freqlist)
+                locimap[locus] = locusmap
+            entropy_map[interval] = locimap
         #log.debug("ending sampled TA iqv map: %s", entropy_map)
-        return entropy_map
+        return convert_keys_to_string(entropy_map)
 
     def get_ta_configuration_evenness_iqv(self):
         """
@@ -823,12 +823,12 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
 
             for ssize, ccounts in counts_by_ssize.items():
                 freqlist = [float(cnt) / float(ssize) for cnt in ccounts.values() if cnt > 0]
-                interval_d[str(ssize)] = diversity_iqv(freqlist)
+                interval_d[ssize] = diversity_iqv(freqlist)
 
-            entropy_map[str(interval)] = interval_d
+            entropy_map[interval] = interval_d
 
         #log.debug("ending sampled TA config iqv: %s", entropy_map)
-        return entropy_map
+        return convert_keys_to_string(entropy_map)
 
 
 
@@ -845,12 +845,12 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
 
             for ssize, ccounts in counts_by_ssize.items():
                 freqlist = [float(cnt) / float(ssize) for cnt in ccounts.values() if cnt > 0]
-                interval_d[str(ssize)] = diversity_shannon_entropy(freqlist)
+                interval_d[ssize] = diversity_shannon_entropy(freqlist)
 
-            entropy_map[str(interval)] = interval_d
+            entropy_map[interval] = interval_d
 
         #log.debug("ending sampled TA config entropy: %s", entropy_map)
-        return entropy_map
+        return convert_keys_to_string(entropy_map)
 
     def get_ta_slatkin_exact_probability(self):
         """
@@ -868,11 +868,11 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
 
                 for ssize, counter in ssize_dict.items():
                     count_list = [count for count in counter.values() if count > 0]
-                    locusmap[str(ssize)] = slatkin_exact_test(count_list)
-                locimap[str(locus)] = locusmap
-            slatkin_map[str(interval)] = locimap
+                    locusmap[ssize] = slatkin_exact_test(count_list)
+                locimap[locus] = locusmap
+            slatkin_map[interval] = locimap
         #log.debug("ending sampled TA slatkin map: %s", slatkin_map)
-        return slatkin_map
+        return convert_keys_to_string(slatkin_map)
 
 
     def get_ta_unlabeled_configuration_counts(self):
@@ -906,12 +906,12 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
                         freq = float(cnt) / float(ssize)
                         traits.append(freq)
 
-                    locusmap[str(ssize)] = sorted(traits, reverse=True)
+                    locusmap[ssize] = sorted(traits, reverse=True)
 
-                locimap[str(locus)] = locusmap
-            freqmap[str(interval)] = locimap
+                locimap[locus] = locusmap
+            freqmap[interval] = locimap
         #log.debug("ending sampled TA unlabeled freq map: %s", freqmap)
-        return freqmap
+        return convert_keys_to_string(freqmap)
 
 
     def get_ta_number_configurations(self):
@@ -926,12 +926,12 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
             interval_richness = dict()
 
             for ssize, ccounts in counts_by_ssize.items():
-                interval_richness[str(ssize)] = len(ccounts)
+                interval_richness[ssize] = len(ccounts)
 
-            ccount_richness[str(interval)] = interval_richness
+            ccount_richness[interval] = interval_richness
 
         #log.debug("ending sampled TA config richness: %s", ccount_richness)
-        return ccount_richness
+        return convert_keys_to_string(ccount_richness)
 
 
     def get_ta_configuration_slatkin_test(self):
@@ -947,12 +947,12 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
 
             for ssize, ccounts in counts_by_ssize.items():
                 cc = [count for count in ccounts.values() if count > 0]
-                interval_slatkin[str(ssize)] = slatkin_exact_test(cc)
+                interval_slatkin[ssize] = slatkin_exact_test(cc)
 
-            slatkin_map[str(interval)] = interval_slatkin
+            slatkin_map[interval] = interval_slatkin
 
         #log.debug("ending sampled TA config slatkin: %s", slatkin_map)
-        return slatkin_map
+        return convert_keys_to_string(slatkin_map)
 
     def get_ta_kandler_remaining_traits_per_locus(self):
         """
@@ -977,11 +977,11 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
                     start_counter = start_counts[interval][locus][ssize]
                     end_counter = end_counts[interval][locus][ssize]
                     remaining_set = start_counter & end_counter
-                    (ssize_map[str(ssize)]).append(len(remaining_set))
+                    (ssize_map[ssize]).append(len(remaining_set))
 
 
-            remaining_by_interval_ssize[str(interval)] = ssize_map
-        return remaining_by_interval_ssize
+            remaining_by_interval_ssize[interval] = ssize_map
+        return convert_keys_to_string(remaining_by_interval_ssize)
 
 
 
