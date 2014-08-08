@@ -83,6 +83,8 @@ def setup():
 
 def main():
     start = time()
+    log.debug("Configuring CT Mixture Model with structure class: %s graph factory: %s interaction rule: %s", simconfig.POPULATION_STRUCTURE_CLASS, simconfig.NETWORK_FACTORY_CLASS, simconfig.INTERACTION_RULE_CLASS)
+
 
     # calculate timing and intervals for samples, given parameters
     ta_interval_list = simconfig.TIME_AVERAGING_DURATIONS
@@ -93,13 +95,12 @@ def main():
     starting_indextime = ending_indextime - kandler_interval_timesteps
 
     log.debug("max TA interval: %s", max_ta_interval)
-    log.debug("kandler generations: %s", kandler_interval_in_generations)
-    log.debug("ending indextime: %s", ending_indextime)
-    log.debug("starting indextime: %s", starting_indextime)
+    log.debug("Kandler survival interval in generations: %s  timesteps: %s", kandler_interval_in_generations, kandler_interval_timesteps)
+    log.debug("starting Kandler survival interval tick: %s", starting_indextime)
+    log.debug("starting Kandler survival interval tick: %s", ending_indextime)
 
-
-    log.debug("Configuring CT Mixture Model with structure class: %s graph factory: %s interaction rule: %s", simconfig.POPULATION_STRUCTURE_CLASS, simconfig.NETWORK_FACTORY_CLASS, simconfig.INTERACTION_RULE_CLASS)
-
+    perlocus_innovation_rate = pg.moran_mutation_rate_from_theta(simconfig.popsize, simconfig.configured_innovation_rate)
+    multilocus_stationarity_time = pg.moran_watkins_multilocus_convergence_time_timesteps(simconfig.popsize, simconfig.num_features, perlocus_innovation_rate)
 
     model_constructor = utils.load_class(simconfig.POPULATION_STRUCTURE_CLASS)
     graph_factory_constructor = utils.load_class(simconfig.NETWORK_FACTORY_CLASS)
@@ -128,6 +129,13 @@ def main():
     log.debug("earliest sample time: %s", earliest_sample_time)
     log.debug("kandler interval start time: %s", kandler_start_time_nota)
     log.debug("kandler interval stop time: %s", kandler_stop_time_nota)
+
+    log.debug("Minimum stationarity time: %s", multilocus_stationarity_time)
+
+    # if multilocus_stationarity_time > earliest_sample_time:
+    #     log.error("Sampling start time is before stationarity reached, increase simulation max time!")
+    #     exit(0)
+
 
     model = model_constructor(simconfig, graph_factory, trait_factory)
     interaction_rule_list = utils.construct_rule_objects(interaction_rule_list, model)

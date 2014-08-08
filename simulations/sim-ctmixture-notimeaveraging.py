@@ -89,6 +89,15 @@ def main():
     kandler_interval_timesteps = kandler_interval_in_generations * simconfig.popsize
     kandler_start_time = simconfig.maxtime - kandler_interval_timesteps
 
+    multilocus_stationarity_time = pg.moran_watkins_multilocus_convergence_time_timesteps(simconfig.popsize, simconfig.num_features, \
+                                                                                          pg.moran_mutation_rate_from_theta(simconfig.popsize, float(args.innovationrate)))
+
+    log.debug("Minimum stationarity time: %s", multilocus_stationarity_time)
+    #
+    # if multilocus_stationarity_time > kandler_start_time:
+    #     log.error("Sampling start time is before stationarity reached, increase simulation max time!")
+    #     exit(0)
+
     log.debug("Taking a Kandler trait survival sample of %s timesteps, beginning at tick %s", kandler_interval_timesteps, kandler_start_time)
 
     model_constructor = utils.load_class(simconfig.POPULATION_STRUCTURE_CLASS)
