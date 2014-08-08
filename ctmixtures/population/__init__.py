@@ -7,7 +7,7 @@
 Description here
 
 """
-from ctmixtures.population.lattice_models import SquareLatticeFactory
+from ctmixtures.population.population_spatial_models import SquareLatticeFactory, CompleteGraphFactory
 from ctmixtures.population.base_population_classes import FixedTraitStructurePopulation
 from ctmixtures.population.watts_strogatz_sw import WattsStrogatzSmallWorldFactory
 from ctmixtures.population.agent import Agent

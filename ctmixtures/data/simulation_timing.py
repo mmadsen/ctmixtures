@@ -35,7 +35,7 @@ def _get_collection_id():
 
 
 
-def store_simulation_timing(sim_id,rulemap,popclass,script,exp,elapsed,length):
+def store_simulation_timing(sim_id,rulemap,popclass,script,exp,elapsed,length,popsize):
     """Stores the parameters and metadata for a simulation run in the database.
 
     """
@@ -46,7 +46,8 @@ def store_simulation_timing(sim_id,rulemap,popclass,script,exp,elapsed,length):
         simulation_run_id = sim_id,
         experiment_name = exp,
         elapsed_time = elapsed,
-        run_length = length
+        run_length = length,
+        popsize = popsize
     )).m.insert()
     return True
 
@@ -56,7 +57,8 @@ def columns_to_export_for_analysis():
         "simulation_run_id",
         "experiment_name",
         "elapsed_time",
-        "run_length"
+        "run_length",
+        "popsize"
     ]
     return cols
 
@@ -75,6 +77,7 @@ class SimulationTiming(Document):
     experiment_name = Field(str)
     elapsed_time = Field(float)
     run_length = Field(int)
+    popsize = Field(int)
 
 
 

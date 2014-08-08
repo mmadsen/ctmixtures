@@ -155,7 +155,7 @@ def main():
             endtime = time()
             elapsed = endtime - start
             log.info("Completed: %s  Elapsed: %s", simconfig.sim_id, elapsed)
-            data.store_simulation_timing(simconfig.sim_id,simconfig.INTERACTION_RULE_CLASS,simconfig.POPULATION_STRUCTURE_CLASS,simconfig.script,args.experiment,elapsed,timestep)
+            data.store_simulation_timing(simconfig.sim_id,simconfig.INTERACTION_RULE_CLASS,simconfig.POPULATION_STRUCTURE_CLASS,simconfig.script,args.experiment,elapsed,timestep,simconfig.popsize)
             exit(0)
 
 # end main
