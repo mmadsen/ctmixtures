@@ -49,7 +49,7 @@ class ConfigurationTest(unittest.TestCase):
         config = utils.MixtureConfiguration(self.filename)
         irule = config.INTERACTION_RULE_CLASS
 
-        prop = irule["ctmixtures.rules.NeutralCopyingRule"]
+        prop = irule["ctmixtures.rules.NeutralRandomLocusCopyingRule"]
         self.assertAlmostEqual(prop, 0.3, None, None, 0.1)
 
 

@@ -7,7 +7,7 @@
     "NUMBER_OF_TRAITS_PER_DIMENSION" : [8,16],
     "SAMPLE_SIZES_STUDIED" : [25,50,100],
     "SIMULATION_CUTOFF_TIME" : 3000000,
-    "INTERACTION_RULE_CLASS" : {"ctmixtures.rules.NeutralCopyingRule": 0.35, "ctmixtures.rules.ConformistCopyingRule": 0.25, "ctmixtures.rules.AntiConformistCopyingRule": 0.4},
+    "INTERACTION_RULE_CLASS" : {"ctmixtures.rules.NeutralRandomLocusCopyingRule": 0.35, "ctmixtures.rules.ConformistCopyingRule": 0.25, "ctmixtures.rules.AntiConformistCopyingRule": 0.4},
     "POPULATION_STRUCTURE_CLASS" : "ctmixtures.population.FixedTraitStructurePopulation",
     "INNOVATION_RULE_CLASS" : "ctmixtures.population.InfiniteAllelesMutationRule",
     "NETWORK_FACTORY_CLASS" : "ctmixtures.population.SquareLatticeFactory",

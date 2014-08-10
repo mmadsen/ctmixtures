@@ -746,7 +746,7 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
 
 
         #log.debug("ending sampled snapshot of counts: %s", self.ending_ssize_counts)
-        #log.debug("ending sampled snapshot of configs: %s", self.config_ssize_counts)
+        #log.info("ending sampled snapshot of configs: %s", self.config_ssize_counts)
         #log.debug("starting sampled snapshot of counts: %s", self.starting_ssize_counts)
 
 
@@ -978,7 +978,7 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
             interval_richness = dict()
 
             for ssize, ccounts in counts_by_ssize.items():
-                interval_richness[ssize] = len(ccounts)
+                interval_richness[ssize] = len([trait for trait, count in ccounts.items() if count > 0])
 
             ccount_richness[interval] = interval_richness
 

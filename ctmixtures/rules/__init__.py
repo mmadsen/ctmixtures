@@ -7,7 +7,7 @@
 Description here
 
 """
-from ctmixtures.rules.neutral_copying_rule import NeutralCopyingRule
+from ctmixtures.rules.neutral_copying_rule import NeutralRandomLocusCopyingRule, NeutralAllLociCopyingRule
 from ctmixtures.rules.infinite_alleles_mutation_rule import InfiniteAllelesMutationRule
 from ctmixtures.rules.conformist_copying_rule import ConformistCopyingRule, AntiConformistCopyingRule
 from ctmixtures.rules.base_rule import BaseInteractionRule

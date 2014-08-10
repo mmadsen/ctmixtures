@@ -29,7 +29,7 @@ class BaseConfiguration(object):
     reproducibility.
     """
 
-    INTERACTION_RULE_CLASS = {"ctmixtures.rules.NeutralCopyingRule": 0.5, "ctmixtures.rules.ConformistCopyingRule": 0.5}
+    INTERACTION_RULE_CLASS = {"ctmixtures.rules.NeutralRandomLocusCopyingRule": 0.5, "ctmixtures.rules.ConformistCopyingRule": 0.5}
 
     POPULATION_STRUCTURE_CLASS = 'ctmixtures.population.FixedTraitStructurePopulation'
 

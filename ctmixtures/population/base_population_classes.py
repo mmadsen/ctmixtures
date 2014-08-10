@@ -90,6 +90,12 @@ class BaseGraphPopulation(object):
         self.interactions_locus[locus] += 1
         self.time_step_last_interaction = timestep
 
+    def update_interactions_for_loci(self, loci, timestep):
+        self.interactions += 1
+        for locus in loci:
+            self.interactions_locus[locus] += 1
+        self.time_step_last_interaction = timestep
+
     def update_innovations(self, locus):
         self.innovations += 1
         self.innovations_locus[locus] += 1
@@ -157,7 +163,7 @@ class FixedTraitStructurePopulation(BaseGraphPopulation):
         plt.show()
 
     def get_traits_packed(self,agent_traits):
-        return ''.join(str(i) for i in agent_traits)
+        return '-'.join(str(i) for i in agent_traits)
 
 
     def set_agent_traits(self, agent_id, trait_list):

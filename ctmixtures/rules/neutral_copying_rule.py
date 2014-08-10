@@ -16,11 +16,12 @@ This rule implements the original Axelrod model on a lattice, given descriptions
 """
 
 import numpy.random as npr
+import copy
 
 from base_rule import BaseInteractionRule
 
 
-class NeutralCopyingRule(BaseInteractionRule):
+class NeutralRandomLocusCopyingRule(BaseInteractionRule):
     """
     Implements a neutral copying process via Moran dynamics, taking an instance of a lattice model at construction.
     Returns control to the caller after each step(), so that other code can run to determine completion,
@@ -53,4 +54,30 @@ class NeutralCopyingRule(BaseInteractionRule):
 
 
 
+class NeutralAllLociCopyingRule(BaseInteractionRule):
+    """
+    Implements a neutral copying process via Moran dynamics, taking an instance of a lattice model at construction.
+    Returns control to the caller after each step(), so that other code can run to determine completion,
+    take samples, etc.
+    """
 
+    def __init__(self, model):
+        self.model = model
+        self.sc = self.model.simconfig
+
+    def step(self, agent, timestep):
+        """
+        Implements a single time step in the neutral drift Moran model, starting from a focal agent,
+        and then one of the focal agent's neighbors at random (this rule knows nothing about
+        how "neighbors" are represented, so the rule itself is fully generic to many
+        population structures, including those with long-distance connections.
+
+        """
+
+        num_loci = self.sc.num_features
+
+        neighbor = self.model.get_random_neighbor_for_agent(agent.id)
+        agent.traits = copy.deepcopy(neighbor.traits)
+
+        # track the interaction and time
+        self.model.update_interactions_for_loci(range(0,num_loci), timestep)

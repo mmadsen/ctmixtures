@@ -47,6 +47,9 @@ def main():
 
     basic_config = utils.MixtureConfiguration(args.configuration)
 
+    # sample sizes list and time averaging durations are NOT factored into the
+    # Cartesian product because they're applied during each simulation.
+
     state_space = [
         basic_config.POPULATION_SIZES_STUDIED,
         basic_config.INNOVATION_RATE,
@@ -59,8 +62,6 @@ def main():
 
     if basic_config.NETWORK_FACTORY_CLASS == 'madsenlab.ctmixtures.population.WattsStrogatzSmallWorldFactory':
         state_space.append(basic_config.WS_REWIRING_FACTOR)
-
-
 
     num_runs = 0
 
