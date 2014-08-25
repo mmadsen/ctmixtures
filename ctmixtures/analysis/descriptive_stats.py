@@ -104,7 +104,7 @@ class PopulationTraitAnalyzer(object):
         :return: constant None
         """
         def wrapper(*args, **kwargs):
-            log.info("call for nonexistent method name: %s", name)
+            log.debug("call for nonexistent method name: %s", name)
             return None
         return wrapper
 
@@ -297,7 +297,7 @@ class TimeAveragedPopulationTraitAnalyzer(PopulationTraitAnalyzer):
         :return: constant None
         """
         def wrapper(*args, **kwargs):
-            log.info("call for nonexistent method name: %s", name)
+            log.debug("call for nonexistent method name: %s", name)
             return None
         return wrapper
 
@@ -505,7 +505,7 @@ class SampledTraitAnalyzer(object):
         :return: constant None
         """
         def wrapper(*args, **kwargs):
-            log.info("call for nonexistent method name: %s", name)
+            log.debug("call for nonexistent method name: %s", name)
             return None
         return wrapper
 
@@ -680,7 +680,7 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
         :return: constant None
         """
         def wrapper(*args, **kwargs):
-            log.info("call for nonexistent method name: %s", name)
+            log.debug("call for nonexistent method name: %s", name)
             return None
         return wrapper
 
@@ -1034,8 +1034,6 @@ class TimeAveragedSampledTraitAnalyzer(PopulationTraitAnalyzer):
 
             remaining_by_interval_ssize[interval] = ssize_map
         return convert_keys_to_string(remaining_by_interval_ssize)
-
-
 
 
 
