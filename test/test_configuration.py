@@ -19,8 +19,6 @@ log.basicConfig(level=log.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 class ConfigurationTest(unittest.TestCase):
     filename = "test/test.json"
 
-
-
     def test_configuration(self):
         log.info("configuration: %s", self.filename)
 

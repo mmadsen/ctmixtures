@@ -72,6 +72,9 @@ def setup():
     simconfig.conformism_strength = float(args.conformismstrength)
     simconfig.anticonformism_strength = float(args.anticonformismstrength)
     simconfig.maxtime = int(args.simulationendtime)
+    simconfig.model_class_label = simconfig.MODEL_CLASS_LABEL
+
+    log.debug("Equifinality model class: %s", simconfig.model_class_label)
 
 
     simconfig.sim_id = uuid.uuid4().urn

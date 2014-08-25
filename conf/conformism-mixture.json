@@ -15,6 +15,7 @@
     "NETWORK_FACTORY_CLASS" : "ctmixtures.population.SquareLatticeFactory",
     "TRAIT_FACTORY_CLASS" : "ctmixtures.traits.LocusAlleleTraitFactory",
     "TIME_AVERAGING_CLASS" : "pytransmission.aggregation.MoranCumulativeTimeAverager",
-    "DYNAMICS_CLASS" : "ctmixtures.dynamics.MoranDynamics"
+    "DYNAMICS_CLASS" : "ctmixtures.dynamics.MoranDynamics",
+    "MODEL_CLASS_LABEL" : "conformistmixture"
 }
 

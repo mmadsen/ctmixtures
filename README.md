@@ -176,7 +176,7 @@ usage: sim-ctmixture-single.py [-h] --experiment EXPERIMENT [--debug DEBUG]
 A typical simulation command might then be:
 
 ```
-mark:ctmixtures/ (master*) $  simulations/sim-ctmixture-notimeaveraging.py --experiment foo --configuration conf/test.json  --simulationendtime 200000  --kandlerinterval 100 --numloci 2 --maxinittraits 5  --periodic 0  --conformismstrength 0.1 --anticonformismstrength 0.1  --innovationrate 1.0 --debug 1 --popsize 100 
+mark:ctmixtures/ (master*) $  simulations/sim-ctmixture-notimeaveraging.py --experiment foo --configuration conf/conformism-mixture.json  --simulationendtime 200000  --kandlerinterval 100 --numloci 2 --maxinittraits 5  --periodic 0  --conformismstrength 0.1 --anticonformismstrength 0.1  --innovationrate 1.0 --debug 1 --popsize 100 
 
 ```
 

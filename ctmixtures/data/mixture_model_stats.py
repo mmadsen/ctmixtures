@@ -44,13 +44,12 @@ def store_stats_mixture_model(config, timestep, num_configs,
                                  unlab_ccount_tassize,config_richness_tassize,config_slatkin_tassize,
                                  config_entropy_tassize,config_iqv_tassize,kandler_remaining_tassize):
     """Stores the parameters and metadata for a simulation run in the database.
-
-
     """
     MixtureModelStats(dict(
         simulation_run_id = config.sim_id,
         sample_time = timestep,
         script_filename = config.script,
+        model_class_label = config.model_class_label,
         interaction_rule_classes = str(config.INTERACTION_RULE_CLASS),
         pop_class = config.POPULATION_STRUCTURE_CLASS,
         network_class = config.NETWORK_FACTORY_CLASS,
@@ -97,15 +96,69 @@ def store_stats_mixture_model(config, timestep, num_configs,
     return True
 
 
+def columns_to_export_for_analysis():
+    """
+
+    :return:
+    """
+    cols = [
+        "simulation_run_id",
+        "model_class_label",
+        "network_class",
+        "interaction_rule_classes",
+        "sample_time",
+        "num_features",
+        "population_size",
+        "innovation_rate",
+        "conformism_strength",
+        "anticonformism_strength",
+        "kandler_interval"
+    ]
+    return cols
+
+def tassize_columns_to_export_for_analysis():
+    cols = [
+        "simulation_run_id",
+        "network_class",
+        "interaction_rule_classes",
+        "sample_time",
+        "num_features",
+        "population_size",
+        "innovation_rate",
+        "conformism_strength",
+        "anticonformism_strength",
+        "kandler_interval"
+    ]
+
+def ssize_columns_to_export_for_analysis():
+    cols = [
+        "simulation_run_id",
+        "network_class",
+        "interaction_rule_classes",
+        "sample_time",
+        "num_features",
+        "population_size",
+        "innovation_rate",
+        "conformism_strength",
+        "anticonformism_strength",
+        "kandler_interval"
+    ]
+
+
+
+
+
 class MixtureModelStats(Document):
 
     class __mongometa__:
         session = Session.by_name(_get_dataobj_id())
         name = 'mixture_model_stats'
 
+    # model and parameters
     _id = Field(schema.ObjectId)
     simulation_run_id = Field(str)
     sample_time = Field(int)
+    model_class_label = Field(str)
     script_filename = Field(str)
     interaction_rule_classes = Field(str)
     pop_class = Field(str)
@@ -117,9 +170,10 @@ class MixtureModelStats(Document):
     conformism_strength = Field(float)
     anticonformism_strength = Field(float)
     innovation_rate = Field(float)
-    # record all sample sizes used in this simulation run
     sample_size = Field([int])
     population_size = Field(int)
+    kandler_interval = Field(int)
+
     # whole population statistics
     slatkin_exact = Field([float])
     shannon_entropy = Field([float])
@@ -130,6 +184,7 @@ class MixtureModelStats(Document):
     unlabeled_frequencies = Field([])
     unlabeled_counts = Field([])
     pop_richness = Field([int])
+
     # results by sample size
     unlabeled_freq_ssize = Field(schema.Anything)
     unlabeled_counts_ssize = Field(schema.Anything)
@@ -140,9 +195,9 @@ class MixtureModelStats(Document):
     iqv_ssize = Field(schema.Anything)
     richness_ssize = Field(schema.Anything)
     slatkin_ssize = Field(schema.Anything)
-    # Kandler remaining traits observations
-    kandler_interval = Field(int)
     kandler_remaining_count = Field([int])
+
+
     # results for TA intervals over all sample sizes
     unlabeled_freq_ta_ssize = Field(schema.Anything)
     richness_ta_ssize = Field(schema.Anything)

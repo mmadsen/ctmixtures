@@ -177,6 +177,8 @@ class BaseConfiguration(object):
         self._sample_size = val
 
 
+
+
     def __repr__(self):
         attrs = vars(self)
         rep = '\n'.join("%s: %s" % item for item in attrs.items() if item[0] != "config")
@@ -298,6 +300,11 @@ class MixtureConfiguration(BaseConfiguration):
 
     """
 
+    MODEL_CLASS_LABEL = 'null'
+    """
+    This is the class label for equifinality analysis by SVM or logistic regression.
+    """
+
     NUMBER_OF_DIMENSIONS_OR_FEATURES = [100,200]
     """
     This is the number of "loci" or "features".  By analogy with classifications,
@@ -329,12 +336,13 @@ class MixtureConfiguration(BaseConfiguration):
         'NUMBER_OF_TRAITS_PER_DIMENSION' : 'Number of traits per locus from which the population is initialized',
         'INNOVATION_RATE' : 'Population rate at which new innovations occur',
         'SAMPLE_SIZES_STUDIED' : 'Sample size from population taken at each sampling event, for which statistics are calculated',
-        'TIME_AVERAGING_DURATIONS' : 'Intervals (in units of population size) over which temporal aggregation occurs in the simulation'
+        'TIME_AVERAGING_DURATIONS' : 'Intervals (in units of population size) over which temporal aggregation occurs in the simulation',
+        'MODEL_CLASS_LABEL' : 'Class label used for equifinality analysis of model results',
     }
 
 
     # For Latex or Pandoc output, we also filter out any object instance variables, and output only the class-level variables.
-    vars_to_filter = ['config', '_prng', "_popsize", "_num_features", "_num_traits", "_sim_id", "_periodic", "_script",
+    vars_to_filter = ['config', '_prng', "_popsize", "_num_features", "_num_traits", "_sim_id", "_periodic", "_script", "_model_class_label",
                       "_innovation_rate", "_max_time", "_num_features", "_num_traits",
                       "INTERACTION_RULE_CLASS", "POPULATION_STRUCTURE_CLASS", "INNOVATION_RULE_CLASS",
                       "NETWORK_FACTORY_CLASS", "TRAIT_FACTORY_CLASS", "_conformism_strength", "_anticonformism_strength", "_sample_size", "TIME_AVERAGING_CLASS",
@@ -356,6 +364,8 @@ class MixtureConfiguration(BaseConfiguration):
         self._innovation_rate = None
         self._conformism_strength = None
         self._anticonformism_strength = None
+        self._model_class_label = None
+
 
 
     @property
@@ -406,6 +416,13 @@ class MixtureConfiguration(BaseConfiguration):
     def num_traits(self,val):
         self._num_traits = val
 
+    @property
+    def model_class_label(self):
+        return self._model_class_label
+
+    @model_class_label.setter
+    def model_class_label(self, val):
+        self._model_class_label = val
 
 
     def _calc_derived_values(self):
