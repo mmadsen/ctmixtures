@@ -73,7 +73,7 @@ Windows users should consult the instructions at the [MongoDB website](http://do
 
 ### Python 2.7 ###
 
-You may already have Python 2.7 installed on your system.  This is especially be true on modern versions of Linux.  
+You may already have Python 2.7 installed on your system.  This is especially be true on modern versions of Linux. You can find out by typing `python` at your terminal prompt, if you have it installed it will tell you the version number and show your the python prompt, which looks like this `>>>` 
 
 On OS X, especially in contemporary versions (10.8, 10.9), you may have either 2.6 or 2.7, but I would strongly 
 advise you to leave the system Python **completely alone** and use a local distribution instead.  The system itself relies strongly
