@@ -13,6 +13,8 @@ import logging as log
 import argparse
 from time import time
 import uuid
+import gc  # garbage collection
+import objgraph  # memory profiling object graph
 
 import ming
 
@@ -35,8 +37,8 @@ def setup():
     parser.add_argument("--popsize", help="Population size", required=True)
     parser.add_argument("--numloci", help="Number of loci per individual", required=True)
     parser.add_argument("--maxinittraits", help="Max initial number of traits per locus for initialization", required=True)
-    parser.add_argument("--conformismstrength", help="Strength of conformist bias [0.0 - 1.0]", required=True)
-    parser.add_argument("--anticonformismstrength", help="Strength of conformist bias [0.0 - 1.0]", required=True)
+    parser.add_argument("--conformismstrength", help="Strength of conformist bias [0.0 - 1.0]")
+    parser.add_argument("--anticonformismstrength", help="Strength of conformist bias [0.0 - 1.0]")
     parser.add_argument("--innovationrate", help="Theta value rate at which innovations occur in population", required=True)
     parser.add_argument("--periodic", help="Periodic boundary condition", choices=['1','0'], required=True)
     parser.add_argument("--kandlerinterval", help="Interval for Kandler remaining traits sample, taken before maxtime, in generations (will be scaled to timesteps)", default="1000")
@@ -171,6 +173,10 @@ def main():
 
         # starting at the beginning of the first time averaging window, we start feeding updates
         # to the time averagers
+
+        if (timestep == earliest_sample_time):
+            log.info("Hit earliest sample time:  %s", timestep)
+
         if ( timestep >= earliest_sample_time ):
             tfa.update(timestep)
 

@@ -163,7 +163,9 @@ class FixedTraitStructurePopulation(BaseGraphPopulation):
         plt.show()
 
     def get_traits_packed(self,agent_traits):
-        return '-'.join(str(i) for i in agent_traits)
+        #return '-'.join(str(i) for i in agent_traits)
+        #return '1-1-1-1'
+        return str(tuple(agent_traits))
 
 
     def set_agent_traits(self, agent_id, trait_list):

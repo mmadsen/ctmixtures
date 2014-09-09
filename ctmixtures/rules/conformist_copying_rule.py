@@ -30,6 +30,7 @@ class BaseNeighborConformismRule(BaseInteractionRule):
 
     """
 
+
     def step(self, agent, timestep):
         """
         Implements a single time step in the neutral drift Moran model, starting from a focal agent,

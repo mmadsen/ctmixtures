@@ -30,19 +30,18 @@ def setup():
     parser.add_argument("--dbhost", help="database hostname, defaults to localhost", default="localhost")
     parser.add_argument("--dbport", help="database port, defaults to 27017", default="27017")
     parser.add_argument("--configuration", help="Path to configuration file")
-    parser.add_argument("--model", choices=['axelrod', 'extensible', 'treestructured'], required=True)
-    parser.add_argument("--finalized", help="Only export runs which finalized after convergence", action="store_true")
+    parser.add_argument("--stats", choices=['pop', 'sampled', 'tasampled'], required=True)
     parser.add_argument("--filename", help="path to file for export", required=True)
 
     args = parser.parse_args()
 
-    simconfig = utils.TreeStructuredConfiguration(args.configuration)
+    simconfig = utils.MixtureConfiguration(args.configuration)
 
-    if args.model == 'axelrod':
+    if args.stats == 'pop':
         simconfig = utils.AxelrodConfiguration(args.configuration)
-    elif args.model == 'extensible':
+    elif args.stats == 'sampled':
         simconfig = utils.AxelrodExtensibleConfiguration(args.configuration)
-    elif args.model == 'treestructured':
+    elif args.stats == 'tasampled':
         simconfig = utils.TreeStructuredConfiguration(args.configuration)
     else:
         log.error("This shouldn't happen - args.model = %s", args.model)
