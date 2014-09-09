@@ -99,10 +99,15 @@ pip install -r requirements.txt
 
 You will also need the SWIG code generation system, which I used in the 
 [slatkin-exact-tools](https://github.com/mmadsen/slatkin-exact-tools)
-project to interface between python and C code. You can download these tools with `git clone https://github.com/mmadsen/slatkin-exact-tools.git`. The easiest way to install these is via the Linux package managers or Homebrew/MacPorts on OS X.  
+project to interface between python and C code. 
 
-After SWIG is installed, use the supplied script `install-slatkin-tools.sh` to compile and install the 
-Slatkin Exact Tools. 
+```Shell
+sudo apt-get install swig
+```
+
+Given an installation of SWIG, you can install the `slatkin-exact-tools`, use the supplied script `install-slatkin-tools.sh` to compile and install the 
+Slatkin Exact Tools.  This will download a release version of the source code, run SWIG to generate the needed python code to use the 
+C code library, and build and install the python library.  
 
 
 ### Install CTMixtures Itself ###
