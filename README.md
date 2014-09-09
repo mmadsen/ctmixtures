@@ -33,6 +33,11 @@ That said, here's how to run the simulation model yourself.
 
 ## Getting Started ##
 
+Download this repository to your system:
+```Shell
+git clone https://github.com/mmadsen/ctmixtures.git
+```
+
 The major dependencies are:
 
 1.  MongoDB database server
@@ -55,48 +60,46 @@ environment out there.
 You can install it easily on Linux via package managers.  For example, on Ubuntu:
 
 ```Shell
-
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
 echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
 sudo apt-get update
 sudo apt-get install mongodb-org
 ```
 
-On OS X, both the Homebrew and MacPorts package managers will install it complete with instructions to start it at boot, 
-and there are step-by-step manual instructions at [mongodb.org](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/).
+On OS X, both the Homebrew and MacPorts package managers will install it complete with instructions to start it at boot, and there are step-by-step manual instructions at [mongodb.org](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-os-x/).
 
 Windows users should consult the instructions at the [MongoDB website](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-windows/).
 
 
 ### Python 2.7 ###
 
-You may already have Python 2.7 installed on your system.  This is especially be true on modern versions of Linux.  
+You may already have Python 2.7 installed on your system.  This is especially be true on modern versions of Linux. You can find out by typing `python` at your terminal prompt, if you have it installed it will tell you the version number and show your the python prompt, which looks like this `>>>` 
 
 On OS X, especially in contemporary versions (10.8, 10.9), you may have either 2.6 or 2.7, but I would strongly 
 advise you to leave the system Python **completely alone** and use a local distribution instead.  The system itself relies strongly
 on the system Python, so upgrading it or changing versions of packages may have unforeseen effects elsewhere on your system.  
 
-Instead, the easiest solution is to install [Anaconda Python](https://store.continuum.io/cshop/anaconda/), a free Python
-distribution engineered to (a) run from a local directory on your system, giving you the ability to install any modules you 
-need without conflict, and (b) pre-packaged with most of the key high-performance numerical and statistical packages 
-for Python.  Some of the latter (e.g., SciPy) can be an extremely lengthy build process if you do it yourself.  Let Anaconda
-do it for you instead.
+Instead, the easiest solution is to install [Anaconda Python](https://store.continuum.io/cshop/anaconda/), a free Python distribution engineered to (a) run from a local directory on your system, giving you the ability to install any modules you need without conflict, and (b) pre-packaged with most of the key high-performance numerical and statistical packages for Python.  Some of the latter (e.g., SciPy) can be an extremely lengthy build process if you do it yourself.  Let Anaconda do it for you instead. To install Anaconda on Ubuntu:
+
+```Shell
+wget http://09c8d0b2229f813c1b93-c95ac804525aac4b6dba79b00b39d1d3.r79.cf1.rackcdn.com/Anaconda-2.0.1-Linux-x86_64.sh
+bash Anaconda-2.0.1-Linux-x86_64.sh
+```
+
 
 ### Other Required Modules or Dependencies ###
 
 Once you have Anaconda or a similar Python distribution installed, there are a number of other modules that need 
-to be installed.  The easiest way to do this is to use `pip` and let it run all the modules in the `requirements.txt` file 
-in this repository.  Do this:
+to be installed.  The easiest way to do this is to use `pip` and let it run all the modules in the `requirements.txt` file in this repository. Do this:
 
-```python
-
+```Shell
+cd ctmixtures
 pip install -r requirements.txt
 ```
 
 You will also need the SWIG code generation system, which I used in the 
 [slatkin-exact-tools](https://github.com/mmadsen/slatkin-exact-tools)
-project to interface between python and C code.  The easiest way to install these is via the Linux package managers or 
-Homebrew/MacPorts on OS X.  
+project to interface between python and C code. You can download these tools with `git clone https://github.com/mmadsen/slatkin-exact-tools.git`. The easiest way to install these is via the Linux package managers or Homebrew/MacPorts on OS X.  
 
 After SWIG is installed, use the supplied script `install-slatkin-tools.sh` to compile and install the 
 Slatkin Exact Tools. 
