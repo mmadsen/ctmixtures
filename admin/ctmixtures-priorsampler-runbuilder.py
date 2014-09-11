@@ -12,50 +12,149 @@ Description here
 import logging as log
 import argparse
 import itertools
-import madsenlab.axelrod.utils as utils
+import ctmixtures.utils as utils
+import numpy.random as npr
+import json
 
 
+
+
+
+def generate_random_neutral_model():
+    """
+    Creates a simulation command line for the sim-ctmixture-timeaveraging.py model, using a random
+    value for --innovationrate drawn uniformly from a configured prior range.
+
+    :return: string
+    """
+
+    theta = npr.uniform(low = float(expconfig['theta_low']), high = float(expconfig['theta_high']))
+
+    cmd = "simulations/sim-ctmixture-timeaveraging.py "
+    cmd += " --experiment "
+    cmd += args.experiment
+    cmd += " --configuration "
+    cmd += args.configuration
+    cmd += " --popsize "
+    cmd += str(expconfig["popsize"])
+    cmd += " --maxinittraits "
+    cmd += str(expconfig["maxinittraits"])
+    cmd += " --numloci "
+    cmd += str(expconfig["numloci"])
+    cmd += " --kandlerinterval "
+    cmd += str(expconfig["kandler_interval"])
+    cmd += " --innovationrate "
+    cmd += str(theta)
+    cmd += " --periodic 0 "
+    cmd += " --simulationendtime "
+    cmd += str(expconfig["endtime"])
+    cmd += " --conformismstrength "
+    cmd += str(0.0)
+    cmd += " --anticonformismstrength "
+    cmd += str(0.0)
+    cmd += " --debug "
+    cmd += args.debug
+    cmd += '\n'
+
+    #log.debug("%s", cmd)
+    return cmd
+
+
+def generate_random_conformist_model():
+    """
+    Creates a simulation command line for the sim-ctmixture-timeaveraging.py model, using a random
+    value for --innovationrate drawn uniformly from a configured prior range.
+
+    :return: string
+    """
+
+    theta = npr.uniform(low = float(expconfig['theta_low']), high = float(expconfig['theta_high']))
+    conf_str = npr.uniform(low = float(expconfig['conformist_strength_low']), high = float(expconfig['conformist_strength_high']))
+    aconf_str = npr.uniform(low = float(expconfig['anticonformist_strength_low']), high = float(expconfig['anticonformist_strength_high']))
+
+    cmd = "simulations/sim-ctmixture-timeaveraging.py "
+    cmd += " --experiment "
+    cmd += args.experiment
+    cmd += " --configuration "
+    cmd += args.configuration
+    cmd += " --popsize "
+    cmd += str(expconfig["popsize"])
+    cmd += " --maxinittraits "
+    cmd += str(expconfig["maxinittraits"])
+    cmd += " --numloci "
+    cmd += str(expconfig["numloci"])
+    cmd += " --kandlerinterval "
+    cmd += str(expconfig["kandler_interval"])
+    cmd += " --innovationrate "
+    cmd += str(theta)
+    cmd += " --periodic 0 "
+    cmd += " --simulationendtime "
+    cmd += str(expconfig["endtime"])
+    cmd += " --conformismstrength "
+    cmd += str(conf_str)
+    cmd += " --anticonformismstrength "
+    cmd += str(aconf_str)
+    cmd += " --debug "
+    cmd += args.debug
+    cmd += '\n'
+
+    #log.debug("%s", cmd)
+    return cmd
+
+
+def parse_experiment_config(config_path):
+    try:
+        json_data = open(config_path)
+        config = json.load(json_data)
+    except ValueError:
+        print "Problem parsing json configuration file - probably malformed syntax"
+        exit(1)
+    except IOError as e:
+        print "I/O error({0}): {1}".format(e.errno, e.strerror)
+        exit(1)
+
+    return config
 
 
 
 def setup():
-    global args, simconfig
+    global args, simconfig, expconfig
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--experiment", help="provide name for experiment", required=True)
+    parser.add_argument("--expconfig", help="Experiment configuration file path", required=True)
     parser.add_argument("--debug", help="turn on debugging output")
     parser.add_argument("--dbhost", help="database hostname, defaults to localhost", default="localhost")
     parser.add_argument("--dbport", help="database port, defaults to 27017", default="27017")
-    parser.add_argument("--configuration", help="Configuration file for experiment", required=True)
-    parser.add_argument("--parallelism", help="Number of concurrent processes to run", default="4")
-    parser.add_argument("--samplinginterval", help="Interval between samples, once sampling begins, defaults to 1M steps", default="1000000")
-    parser.add_argument("--samplingstarttime", help="Time at which sampling begins, defaults to 1M steps", default="6000000")
-    parser.add_argument("--simulationendtime", help="Time at which simulation and sampling end, defaults to 10000000 steps", default="10000000")
+    parser.add_argument("--configuration", help="Configuration file to use in generated simulation commands", required=True)
+    parser.add_argument("--parallelism", help="Number of separate generated command lists to create", default="4")
+    parser.add_argument("--numsims", type=int, help="Number of simulations to generate by random prior sampling", default=100)
+    parser.add_argument("--model", help="Model being generated", choices=['neutral', 'conformist'])
 
     args = parser.parse_args()
 
-    simconfig = utils.TreeStructuredConfiguration(args.configuration)
+    simconfig = utils.MixtureConfiguration(args.configuration)
+    expconfig = parse_experiment_config(args.expconfig)
 
     if args.debug == '1':
         log.basicConfig(level=log.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+    elif args.debug is None:
+        args.debug = '0'
     else:
         log.basicConfig(level=log.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 
-    log.debug("experiment name: %s", args.experiment)
+    log.info("Generating simulation commands for experiment: %s and model: %s", args.experiment, args.model)
 
 
 
 def main():
-
-    structure_class_name = simconfig.POPULATION_STRUCTURE_CLASS
-    log.info("Configuring TreeStructured Axelrod model with structure class: %s", structure_class_name)
-
-
-    log.debug("Opening %s output files given parallelism", args.parallelism)
+    log.info("Opening %s output files for simulation configuration", args.parallelism)
     num_files = int(args.parallelism)
     file_list = []
     base_name = "simrunner-exp-"
     base_name += args.experiment
+    base_name += "-"
+    base_name += args.model
     base_name += "-"
 
     for i in range(0, num_files):
@@ -72,80 +171,26 @@ def main():
     file_cycle = itertools.cycle(file_list)
 
 
-    basic_config = utils.TreeStructuredConfiguration(args.configuration)
+    for i in xrange(0, args.numsims):
 
-    if basic_config.INTERACTION_RULE_CLASS == 'madsenlab.axelrod.rules.MultipleTreePrerequisitesLearningCopyingRule':
-        state_space = [
-            basic_config.POPULATION_SIZES_STUDIED,
-            basic_config.TRAIT_LEARNING_RATE,
-            basic_config.MAXIMUM_INITIAL_TRAITS,
-            basic_config.NUM_TRAIT_TREES,
-            basic_config.TREE_BRANCHING_FACTOR,
-            basic_config.TREE_DEPTH_FACTOR,
-            basic_config.TRAIT_LOSS_RATE,
-            basic_config.INNOVATION_RATE,
-        ]
-    else:
-        log.error("This parallel sim runner not compatible with rule class: %s", basic_config.INTERACTION_RULE_CLASS)
-        exit(1)
+        if args.model == 'neutral':
+            cmd = generate_random_neutral_model()
+        elif args.model == 'conformist':
+            cmd = generate_random_conformist_model()
+        else:
+            log.error("unrecognized model type, add to argparse and create a generator method")
+            exit(1)
 
 
-    if basic_config.NETWORK_FACTORY_CLASS == 'madsenlab.axelrod.population.WattsStrogatzSmallWorldFactory':
-        state_space.append(basic_config.WS_REWIRING_FACTOR)
-
-
-    for param_combination in itertools.product(*state_space):
-        for replication in range(0, basic_config.REPLICATIONS_PER_PARAM_SET):
-            cmd = "simulations/sim-ctmixture-notimeaveraging.py "
-            cmd += " --experiment "
-            cmd += args.experiment
-            cmd += " --configuration "
-            cmd += args.configuration
-            cmd += " --popsize "
-            cmd += str(param_combination[0])
-            cmd += " --maxinittraits "
-            cmd += str(param_combination[2])
-            cmd += " --learningrate "
-            cmd += str(param_combination[1])
-            cmd += " --lossrate "
-            cmd += str(param_combination[6])
-            cmd += " --innovationrate "
-            cmd += str(param_combination[7])
-            cmd += " --periodic 0 "
-            cmd += " --numtraittrees "
-            cmd += str(param_combination[3])
-            cmd += " --branchingfactor "
-            cmd += str(param_combination[4])
-            cmd += " --depthfactor "
-            cmd += str(param_combination[5])
-            cmd += " --debug "
-            cmd += args.debug
-
-            if len(param_combination) == 9:
-                cmd += " --swrewiring "
-                cmd += str(param_combination[8])
-
-            if args.samplinginterval:
-                cmd += " --samplinginterval "
-                cmd += str(args.samplinginterval)
-
-            if args.samplingstarttime:
-                cmd += " --samplingstarttime "
-                cmd += str(args.samplingstarttime)
-
-            if args.simulationendtime:
-                cmd += " --simulationendtime "
-                cmd += str(args.simulationendtime)
-
-
-            cmd += '\n'
-
-            fc = file_cycle.next()
-            fc.write(cmd)
+        fc = file_cycle.next()
+        fc.write(cmd)
 
 
     for fh in file_list:
         fh.close()
+
+
+
 
 
 if __name__ == "__main__":

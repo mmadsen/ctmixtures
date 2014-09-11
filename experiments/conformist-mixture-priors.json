@@ -1,0 +1,13 @@
+{
+    "theta_low": 0.1,
+    "theta_high": 5.0,
+    "conformist_strength_low": 0.05,
+    "conformist_strength_high": 0.25,
+    "anticonformist_strength_low": 0.05,
+    "anticonformist_strength_high": 0.25,
+    "kandler_interval": 50,
+    "maxinittraits": 10,
+    "numloci": 4,
+    "popsize": 100,
+    "endtime": 1000000
+}
