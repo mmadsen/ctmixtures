@@ -2,14 +2,14 @@ from distutils.core import setup
 
 setup(name="ctmixtures",
       version="1.0",
-      packages=['ctmixtures',
-                'ctmixtures.utils',
-                'ctmixtures.analysis',
-                'ctmixtures.data',
-                'ctmixtures.traits',
-                'ctmixtures.population',
-                'ctmixtures.dynamics',
-                'ctmixtures.rules'],
+      package_dir = {'': 'ctmixtures'},
+      scripts = [
+          'admin/ctmixtures-planner.py',
+          'admin/ctmixtures-priorsampler-runbuilder.py',
+          'admin/ctmixtures-export-data.py',
+          'simulations/sim-ctmixture-notimeaveraging.py',
+          'simulations/sim-ctmixture-timeaveraging.py'
+      ],
       author='Mark E. Madsen',
       author_email='mark@madsenlab.org',
       url='https://github.com/mmadsen/ctmixtures',

@@ -13,14 +13,13 @@ import logging as log
 import argparse
 from time import time
 import uuid
-import gc  # garbage collection
-import objgraph  # memory profiling object graph
+import numpy.random as npr
+import random
+import sys
 
 import ming
-
 import ctmixtures.utils as utils
 import ctmixtures.data as data
-import ctmixtures.dynamics as dyn
 import ctmixtures.analysis as analysis
 import pytransmission.popgen as pg
 
@@ -43,6 +42,7 @@ def setup():
     parser.add_argument("--periodic", help="Periodic boundary condition", choices=['1','0'], required=True)
     parser.add_argument("--kandlerinterval", help="Interval for Kandler remaining traits sample, taken before maxtime, in generations (will be scaled to timesteps)", default="1000")
     parser.add_argument("--simulationendtime", help="Time at which simulation and sampling end, defaults to 2M steps", default="2000000")
+    parser.add_argument("--seed", type=int, help="Seed for random generators to ensure replicability")
 
     args = parser.parse_args()
 
@@ -52,6 +52,16 @@ def setup():
         log.basicConfig(level=log.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
     else:
         log.basicConfig(level=log.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+
+    if args.seed is None:
+        log.debug("No seed given, allowing RNG's to initialize randomly")
+    else:
+        log.debug("Seeding RNGs with seed: %s", args.seed)
+        npr.seed(args.seed)
+        random.seed(args.seed)
+        simconfig.random_seed = args.seed
+
+    simconfig.full_command_line = " ".join(sys.argv)
 
     log.debug("experiment name: %s", args.experiment)
     data.set_experiment_name(args.experiment)

@@ -342,7 +342,7 @@ class MixtureConfiguration(BaseConfiguration):
 
 
     # For Latex or Pandoc output, we also filter out any object instance variables, and output only the class-level variables.
-    vars_to_filter = ['config', '_prng', "_popsize", "_num_features", "_num_traits", "_sim_id", "_periodic", "_script", "_model_class_label",
+    vars_to_filter = ['config', '_prng', "_popsize", "_num_features", "_num_traits", "_sim_id", "_periodic", "_script", "_model_class_label", "_random_seed", "_full_command_line",
                       "_innovation_rate", "_max_time", "_num_features", "_num_traits",
                       "INTERACTION_RULE_CLASS", "POPULATION_STRUCTURE_CLASS", "INNOVATION_RULE_CLASS",
                       "NETWORK_FACTORY_CLASS", "TRAIT_FACTORY_CLASS", "_conformism_strength", "_anticonformism_strength", "_sample_size", "TIME_AVERAGING_CLASS",
@@ -365,8 +365,25 @@ class MixtureConfiguration(BaseConfiguration):
         self._conformism_strength = None
         self._anticonformism_strength = None
         self._model_class_label = None
+        self._random_seed = None
+        self._full_command_line = None
 
 
+    @property
+    def random_seed(self):
+        return self._random_seed
+
+    @random_seed.setter
+    def random_seed(self,v):
+        self._random_seed = v
+
+    @property
+    def full_command_line(self):
+        return self._full_command_line
+
+    @full_command_line.setter
+    def full_command_line(self,v):
+        self._full_command_line = v
 
     @property
     def conformism_strength(self):

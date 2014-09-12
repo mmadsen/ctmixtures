@@ -50,6 +50,8 @@ def store_stats_mixture_model(config, timestep, num_configs,
         sample_time = timestep,
         script_filename = config.script,
         model_class_label = config.model_class_label,
+        full_command_line = config.full_command_line,
+        random_seed = config.random_seed,
         interaction_rule_classes = str(config.INTERACTION_RULE_CLASS),
         pop_class = config.POPULATION_STRUCTURE_CLASS,
         network_class = config.NETWORK_FACTORY_CLASS,
@@ -106,6 +108,7 @@ def columns_to_export_for_analysis():
         "model_class_label",
         "network_class",
         "interaction_rule_classes",
+        "random_seed",
         "sample_time",
         "num_features",
         "population_size",
@@ -160,6 +163,8 @@ class MixtureModelStats(Document):
     sample_time = Field(int)
     model_class_label = Field(str)
     script_filename = Field(str)
+    full_command_line = Field(str)
+    random_seed = Field(int)
     interaction_rule_classes = Field(str)
     pop_class = Field(str)
     network_class = Field(str)

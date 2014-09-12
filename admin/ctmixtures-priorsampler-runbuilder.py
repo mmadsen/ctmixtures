@@ -17,10 +17,7 @@ import numpy.random as npr
 import json
 
 
-
-
-
-def generate_random_neutral_model():
+def generate_random_neutral_model(seed):
     """
     Creates a simulation command line for the sim-ctmixture-timeaveraging.py model, using a random
     value for --innovationrate drawn uniformly from a configured prior range.
@@ -54,13 +51,15 @@ def generate_random_neutral_model():
     cmd += str(0.0)
     cmd += " --debug "
     cmd += args.debug
+    cmd += " --seed "
+    cmd += str(seed)
     cmd += '\n'
 
     #log.debug("%s", cmd)
     return cmd
 
 
-def generate_random_conformist_model():
+def generate_random_conformist_model(seed):
     """
     Creates a simulation command line for the sim-ctmixture-timeaveraging.py model, using a random
     value for --innovationrate drawn uniformly from a configured prior range.
@@ -96,6 +95,9 @@ def generate_random_conformist_model():
     cmd += str(aconf_str)
     cmd += " --debug "
     cmd += args.debug
+    cmd += " --seed "
+    cmd += str(seed)
+
     cmd += '\n'
 
     #log.debug("%s", cmd)
@@ -173,10 +175,13 @@ def main():
 
     for i in xrange(0, args.numsims):
 
+        # give us a random seed that will fit in a 64 bit long integer
+        seed = npr.randint(1,2**62)
+
         if args.model == 'neutral':
-            cmd = generate_random_neutral_model()
+            cmd = generate_random_neutral_model(seed)
         elif args.model == 'conformist':
-            cmd = generate_random_conformist_model()
+            cmd = generate_random_conformist_model(seed)
         else:
             log.error("unrecognized model type, add to argparse and create a generator method")
             exit(1)
