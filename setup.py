@@ -2,7 +2,15 @@ from distutils.core import setup
 
 setup(name="ctmixtures",
       version="1.0",
-      package_dir = {'': 'ctmixtures'},
+      packages = [
+        'ctmixtures.analysis',
+        'ctmixtures.data',
+        'ctmixtures.dynamics',
+        'ctmixtures.population',
+        'ctmixtures.rules',
+        'ctmixtures.traits',
+        'ctmixtures.utils'
+      ],
       scripts = [
           'admin/ctmixtures-planner.py',
           'admin/ctmixtures-priorsampler-runbuilder.py',
