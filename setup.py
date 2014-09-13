@@ -3,6 +3,7 @@ from distutils.core import setup
 setup(name="ctmixtures",
       version="1.0",
       packages = [
+        'ctmixtures',
         'ctmixtures.analysis',
         'ctmixtures.data',
         'ctmixtures.dynamics',
