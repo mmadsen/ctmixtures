@@ -27,7 +27,7 @@ def generate_random_neutral_model(seed):
 
     theta = npr.uniform(low = float(expconfig['theta_low']), high = float(expconfig['theta_high']))
 
-    cmd = "simulations/sim-ctmixture-timeaveraging.py "
+    cmd = "sim-ctmixture-timeaveraging.py "
     cmd += " --experiment "
     cmd += args.experiment
     cmd += " --configuration "
@@ -71,7 +71,7 @@ def generate_random_conformist_model(seed):
     conf_str = npr.uniform(low = float(expconfig['conformist_strength_low']), high = float(expconfig['conformist_strength_high']))
     aconf_str = npr.uniform(low = float(expconfig['anticonformist_strength_low']), high = float(expconfig['anticonformist_strength_high']))
 
-    cmd = "simulations/sim-ctmixture-timeaveraging.py "
+    cmd = "sim-ctmixture-timeaveraging.py "
     cmd += " --experiment "
     cmd += args.experiment
     cmd += " --configuration "
