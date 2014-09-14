@@ -27,11 +27,24 @@ def generate_random_neutral_model(seed):
 
     theta = npr.uniform(low = float(expconfig['theta_low']), high = float(expconfig['theta_high']))
 
-    cmd = "sim-ctmixture-timeaveraging.py "
+    if args.simprefix is not None:
+        cmd = ""
+        cmd += args.simprefix
+        cmd += "/sim-ctmixture-timeaveraging.py "
+    else:
+        cmd = "sim-ctmixture-timeaveraging.py "
+
     cmd += " --experiment "
     cmd += args.experiment
     cmd += " --configuration "
-    cmd += args.configuration
+
+    if args.confprefix is not None:
+        cmd += args.confprefix
+        cmd += "/"
+        cmd += args.configuration
+    else:
+        cmd += args.configuration
+
     cmd += " --popsize "
     cmd += str(expconfig["popsize"])
     cmd += " --maxinittraits "
@@ -71,11 +84,24 @@ def generate_random_conformist_model(seed):
     conf_str = npr.uniform(low = float(expconfig['conformist_strength_low']), high = float(expconfig['conformist_strength_high']))
     aconf_str = npr.uniform(low = float(expconfig['anticonformist_strength_low']), high = float(expconfig['anticonformist_strength_high']))
 
-    cmd = "sim-ctmixture-timeaveraging.py "
+    if args.simprefix is not None:
+        cmd = ""
+        cmd += args.simprefix
+        cmd += "/sim-ctmixture-timeaveraging.py "
+    else:
+        cmd = "sim-ctmixture-timeaveraging.py "
+
     cmd += " --experiment "
     cmd += args.experiment
     cmd += " --configuration "
-    cmd += args.configuration
+
+    if args.confprefix is not None:
+        cmd += args.confprefix
+        cmd += "/"
+        cmd += args.configuration
+    else:
+        cmd += args.configuration
+
     cmd += " --popsize "
     cmd += str(expconfig["popsize"])
     cmd += " --maxinittraits "
@@ -132,6 +158,8 @@ def setup():
     parser.add_argument("--parallelism", help="Number of separate generated command lists to create", default="4")
     parser.add_argument("--numsims", type=int, help="Number of simulations to generate by random prior sampling", default=100)
     parser.add_argument("--model", help="Model being generated", choices=['neutral', 'conformist'])
+    parser.add_argument("--simprefix", help="Full path prefix to the simulation executable (optional)")
+    parser.add_argument("--confprefix", help="Full path prefix to the configuration file (optional)")
 
     args = parser.parse_args()
 
