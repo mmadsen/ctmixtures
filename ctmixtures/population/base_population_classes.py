@@ -11,9 +11,7 @@ Description here
 import pprint as pp
 from collections import defaultdict
 
-import networkx as nx
-import matplotlib.pyplot as plt
-from numpy.random import RandomState
+import numpy.random as npr
 
 
 ###################################################################################
@@ -34,7 +32,7 @@ class BaseGraphPopulation(object):
         self.innovations = 0
         self.losses = 0
         self.time_step_last_interaction = 0
-        self.prng = RandomState()  # allow the library to choose a seed via OS specific mechanism
+        self.prng = npr.RandomState()  # allow the library to choose a seed via OS specific mechanism
         self.graph_factory = graph_factory
         self.trait_factory = trait_factory
         self._interaction_rules = None
@@ -155,12 +153,12 @@ class FixedTraitStructurePopulation(BaseGraphPopulation):
     def __init__(self, simconfig,graph_factory, trait_factory):
         super(FixedTraitStructurePopulation, self).__init__(simconfig, graph_factory, trait_factory)
 
-    def draw_network_colored_by_culture(self):
-        nodes, colors = zip(*nx.get_node_attributes(self.agentgraph, 'traits').items())
-        nodes, pos = zip(*nx.get_node_attributes(self.agentgraph, 'pos').items())
-        color_tupled_compressed = [int(''.join(str(i) for i in t)) for t in colors]
-        nx.draw(self.agentgraph, pos=pos, nodelist=nodes, node_color=color_tupled_compressed)
-        plt.show()
+    # def draw_network_colored_by_culture(self):
+    #     nodes, colors = zip(*nx.get_node_attributes(self.agentgraph, 'traits').items())
+    #     nodes, pos = zip(*nx.get_node_attributes(self.agentgraph, 'pos').items())
+    #     color_tupled_compressed = [int(''.join(str(i) for i in t)) for t in colors]
+    #     nx.draw(self.agentgraph, pos=pos, nodelist=nodes, node_color=color_tupled_compressed)
+    #     plt.show()
 
     def get_traits_packed(self,agent_traits):
         #return '-'.join(str(i) for i in agent_traits)

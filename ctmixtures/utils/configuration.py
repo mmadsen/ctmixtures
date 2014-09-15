@@ -10,7 +10,7 @@ Description here
 
 import json
 from operator import itemgetter
-from numpy.random import RandomState
+import numpy.random as npr
 
 
 ##########################################################################
@@ -99,7 +99,7 @@ class BaseConfiguration(object):
             print "Problem parsing json configuration file - probably malformed syntax"
             exit(1)
         except IOError as e:
-            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            print "Configuration file not readable, probably bad path, I/O error({0}): {1}".format(e.errno, e.strerror)
             exit(1)
 
         # we succeeded in loading the configuration, now override the default values of variables
@@ -120,7 +120,7 @@ class BaseConfiguration(object):
         self._sample_size = None
 
         # set up a global RNG everything can use
-        self._prng = RandomState()
+        self._prng = npr.RandomState()
 
     @property
     def prng(self):

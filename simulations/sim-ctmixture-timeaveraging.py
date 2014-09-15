@@ -167,7 +167,7 @@ def main():
     ssfa = analysis.SampledTraitAnalyzer(model)
 
 
-    log.info("Kandler tracking interval start: %s  stop: %s", kandler_start_time_nota, kandler_stop_time_nota)
+    log.debug("Kandler tracking interval start: %s  stop: %s", kandler_start_time_nota, kandler_stop_time_nota)
 
 
     log.info("Starting %s", simconfig.sim_id)
@@ -185,7 +185,7 @@ def main():
         # to the time averagers
 
         if (timestep == earliest_sample_time):
-            log.info("Hit earliest sample time:  %s", timestep)
+            log.debug("Hit earliest sample time:  %s", timestep)
 
         if ( timestep >= earliest_sample_time ):
             tfa.update(timestep)
