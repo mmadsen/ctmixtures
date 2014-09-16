@@ -15,6 +15,7 @@ import itertools
 import ctmixtures.utils as utils
 import numpy.random as npr
 import json
+import uuid
 
 
 def generate_random_neutral_model(seed):
@@ -181,7 +182,7 @@ def main():
     log.info("Opening %s output files for simulation configuration", args.parallelism)
     num_files = int(args.parallelism)
     file_list = []
-    base_name = "simrunner-exp-"
+    base_name = "job-"
     base_name += args.experiment
     base_name += "-"
     base_name += args.model
@@ -190,7 +191,7 @@ def main():
     for i in range(0, num_files):
         filename = ''
         filename += base_name
-        filename += str(i)
+        filename += str(uuid.uuid4())
         filename += ".sh"
 
         f = open(filename, 'w')
