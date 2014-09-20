@@ -98,19 +98,23 @@ def store_stats_mixture_model(config, timestep, num_configs,
     return True
 
 
-def columns_to_export_for_analysis():
-    """
 
-    :return:
-    """
+
+def sim_record_columns_to_export():
     cols = [
         "simulation_run_id",
         "model_class_label",
         "network_class",
         "interaction_rule_classes",
+        "innovation_class",
+        "pop_class",
+        "network_class",
+        "trait_class",
         "random_seed",
-        "sample_time",
         "num_features",
+        "init_traits_per_feature",
+        "script_filename",
+        "full_command_line",
         "population_size",
         "innovation_rate",
         "conformism_strength",
@@ -119,35 +123,40 @@ def columns_to_export_for_analysis():
     ]
     return cols
 
-def tassize_columns_to_export_for_analysis():
+
+
+# the following methods have defined all columns to export in the past,
+# but as feature transforms and other summary statistics have grown
+# in importance, all that is now done in analytics/ctmixtures-export-data.py
+# What remains are important stub columns or invariant columns.
+
+def pop_columns_to_export():
+    """
+
+    :return:
+    """
     cols = [
         "simulation_run_id",
-        "network_class",
-        "interaction_rule_classes",
-        "sample_time",
-        "num_features",
-        "population_size",
-        "innovation_rate",
-        "conformism_strength",
-        "anticonformism_strength",
-        "kandler_interval"
+        "model_class_label",
+        "num_trait_configurations",
+        "configuration_slatkin",
     ]
+    return cols
 
-def ssize_columns_to_export_for_analysis():
+
+def ssize_columns_to_export():
     cols = [
         "simulation_run_id",
-        "network_class",
-        "interaction_rule_classes",
-        "sample_time",
-        "num_features",
-        "population_size",
-        "innovation_rate",
-        "conformism_strength",
-        "anticonformism_strength",
-        "kandler_interval"
+        "model_class_label",
     ]
+    return cols
 
-
+def tassize_columns_to_export():
+    cols = [
+        "simulation_run_id",
+        "model_class_label",
+    ]
+    return cols
 
 
 
