@@ -85,6 +85,7 @@ def export_population_stats():
     pop_fields = data.mixture_model_stats.pop_columns_to_export()
 
     # adjust the fields for the new summary statistics
+    pop_fields.append('innovation_rate')
     pop_fields.append('slatkin_locus_max')
     pop_fields.append('slatkin_locus_min')
     pop_fields.append('entropy_locus_max')
@@ -108,6 +109,7 @@ def export_population_stats():
         row['model_class_label'] = sample['model_class_label']
         row['num_trait_configurations'] = sample['num_trait_configurations']
         row['configuration_slatkin'] = sample['configuration_slatkin']
+        row['innovation_rate'] = sample['innovation_rate']
 
         # slatkin exact
         slatkin_values = sample['slatkin_exact']

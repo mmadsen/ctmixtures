@@ -15,7 +15,7 @@ setup(name="ctmixtures",
       scripts = [
           'admin/ctmixtures-planner.py',
           'admin/ctmixtures-priorsampler-runbuilder.py',
-          'admin/ctmixtures-export-data.py',
+          'analytics/ctmixtures-export-data.py',
           'simulations/sim-ctmixture-notimeaveraging.py',
           'simulations/sim-ctmixture-timeaveraging.py'
       ],

@@ -16,6 +16,6 @@
     "TRAIT_FACTORY_CLASS" : "ctmixtures.traits.LocusAlleleTraitFactory",
     "TIME_AVERAGING_CLASS" : "pytransmission.aggregation.MoranCumulativeTimeAverager",
     "DYNAMICS_CLASS" : "ctmixtures.dynamics.MoranDynamics",
-    "MODEL_CLASS_LABEL" : "pureneutral"
+    "MODEL_CLASS_LABEL" : "allneutral"
 }
 
