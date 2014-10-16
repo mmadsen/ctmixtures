@@ -9,6 +9,7 @@ import csv
 import logging as log
 import argparse
 import ctmixtures.data as data
+import numpy as np
 
 
 ############################################################################
@@ -90,12 +91,16 @@ def export_population_stats():
     pop_fields.append('slatkin_locus_min')
     pop_fields.append('entropy_locus_max')
     pop_fields.append('entropy_locus_min')
+    pop_fields.append('entropy_locus_mean')
     pop_fields.append('iqv_locus_max')
     pop_fields.append('iqv_locus_min')
+    pop_fields.append('iqv_locus_mean')
     pop_fields.append('richness_locus_max')
     pop_fields.append('richness_locus_min')
+    pop_fields.append('richness_locus_mean')
     pop_fields.append('kandler_locus_max')
     pop_fields.append('kandler_locus_min')
+    pop_fields.append('kandler_locus_mean')
 
     ofile = open(full_filename, "wb")
     writer = csv.DictWriter(ofile, fieldnames=pop_fields, quotechar='"', quoting=csv.QUOTE_ALL)
@@ -120,21 +125,25 @@ def export_population_stats():
         entropy_list = sample['slatkin_exact']
         row['entropy_locus_max'] = max(entropy_list)
         row['entropy_locus_min'] = min(entropy_list)
+        row['entropy_locus_mean'] = np.average(entropy_list)
 
         # IQV
         iqv_list = sample['iqv_diversity']
         row['iqv_locus_max'] = max(iqv_list)
         row['iqv_locus_min'] = min(iqv_list)
+        row['iqv_locus_mean'] = np.average(iqv_list)
 
         # Per-locus richness
         richness_list = sample['pop_richness']
         row['richness_locus_max'] = max(richness_list)
         row['richness_locus_min'] = min(richness_list)
+        row['richness_locus_mean'] = np.average(richness_list)
 
         # Kandler remaining per locus
         kandler_list = sample['kandler_remaining_count']
         row['kandler_locus_max'] = max(kandler_list)
         row['kandler_locus_min'] = min(kandler_list)
+        row['kandler_locus_mean'] = np.average(kandler_list)
 
         #log.info("sim data row: %s", row)
         writer.writerow(row)
@@ -161,6 +170,23 @@ def export_sampled_stats():
 
     sim_fields = data.mixture_model_stats.ssize_columns_to_export()
 
+    sim_fields.append('innovation_rate')
+    sim_fields.append('sample_size')
+    sim_fields.append('config_slatkin_ssize')
+    sim_fields.append('num_configurations_ssize')
+    sim_fields.append('richness_locus_min')
+    sim_fields.append('richness_locus_max')
+    sim_fields.append('richness_locus_mean')
+    sim_fields.append('slatkin_locus_min')
+    sim_fields.append('slatkin_locus_max')
+    sim_fields.append('slatkin_locus_mean')
+    sim_fields.append('entropy_locus_min')
+    sim_fields.append('entropy_locus_max')
+    sim_fields.append('entropy_locus_mean')
+    sim_fields.append('iqv_locus_min')
+    sim_fields.append('iqv_locus_max')
+    sim_fields.append('iqv_locus_mean')
+
     ofile = open(full_filename, "wb")
     writer = csv.DictWriter(ofile, fieldnames=sim_fields, quotechar='"', quoting=csv.QUOTE_ALL)
     headers = dict((n, n) for n in sim_fields)
@@ -168,7 +194,42 @@ def export_sampled_stats():
     cursor = data.MixtureModelStats.m.find(dict(), dict(timeout=False))
 
     for sample in cursor:
-        pass
+        row = dict()
+        row['simulation_run_id'] = sample['simulation_run_id']
+        row['model_class_label'] = sample['model_class_label']
+        row['innovation_rate'] = sample['innovation_rate']
+
+        # all of the other fields require iterating over sample sizes.
+        ssizes = sample['sample_size']
+        for ssize in ssizes:
+            row['sample_size'] = ssize
+            row['config_slatkin_ssize'] = sample['config_slatkin_ssize'][str(ssize)]
+
+            config_cnt = sample['unlabeled_config_counts_ssize'][str(ssize)]
+            row['num_configurations_ssize'] = len(config_cnt)
+
+            richness_list = sample['richness_ssize'][str(ssize)]
+            row['richness_locus_min'] = min(richness_list)
+            row['richness_locus_max'] = max(richness_list)
+            row['richness_locus_mean'] = np.average(richness_list)
+
+            slatkin_list = sample['slatkin_ssize'][str(ssize)]
+            row['slatkin_locus_min'] = min(slatkin_list)
+            row['slatkin_locus_max'] = max(slatkin_list)
+            row['slatkin_locus_mean'] = np.average(slatkin_list)
+
+            entropy_list = sample['entropy_ssize'][str(ssize)]
+            row['entropy_locus_min'] = min(entropy_list)
+            row['entropy_locus_min'] = max(entropy_list)
+            row['entropy_locus_min'] = np.average(entropy_list)
+
+            iqv_list = sample['iqv_ssize'][str(ssize)]
+            row['iqv_locus_min'] = min(iqv_list)
+            row['iqv_locus_max'] = max(iqv_list)
+            row['iqv_locus_mean'] = np.average(iqv_list)
+
+        #log.info("sim data row: %s", row)
+        writer.writerow(row)
 
     ofile.close()
 
@@ -187,6 +248,10 @@ def export_sampled_stats():
 # kandler_remaining_tassize = Field(schema.Anything)
 
 def export_ta_sampled_stats():
+
+    # METHOD NOT IMPLEMENTED YET
+    return
+
     ## export a file with sampled statistics
     full_filename = ''
     full_filename += args.filename
@@ -206,6 +271,80 @@ def export_ta_sampled_stats():
     ofile.close()
 
 
+def export_slatkin_locus_values():
+    # ## Export a full population census statistics file ###
+    full_filename = ''
+    full_filename += args.filename
+    full_filename += "-pop-slatkin-locus-data.csv"
+    pop_fields = []
+
+    # adjust the fields for the new summary statistics
+    pop_fields.append('simulation_run_id')
+    pop_fields.append('model_class_label')
+    pop_fields.append('innovation_rate')
+    pop_fields.append('slatkin_locus_value')
+
+    ofile = open(full_filename, "wb")
+    writer = csv.DictWriter(ofile, fieldnames=pop_fields, quotechar='"', quoting=csv.QUOTE_ALL)
+    headers = dict((n, n) for n in pop_fields)
+    writer.writerow(headers)
+
+    cursor = data.MixtureModelStats.m.find(dict(), dict(timeout=False))
+    for sample in cursor:
+        # slatkin exact
+        slatkin_values = sample['slatkin_exact']
+
+        for value in slatkin_values:
+            row = dict()
+            row['simulation_run_id'] = sample['simulation_run_id']
+            row['model_class_label'] = sample['model_class_label']
+            row['innovation_rate'] = sample['innovation_rate']
+            row['slatkin_locus_value'] = value
+
+            #log.info("sim data row: %s", row)
+            writer.writerow(row)
+
+    ofile.close()
+
+def export_richness_locus_values():
+    # ## Export a full population census statistics file ###
+    full_filename = ''
+    full_filename += args.filename
+    full_filename += "-pop-richness-locus-data.csv"
+    pop_fields = []
+
+    # adjust the fields for the new summary statistics
+    pop_fields.append('simulation_run_id')
+    pop_fields.append('model_class_label')
+    pop_fields.append('innovation_rate')
+    pop_fields.append('richness_locus_value')
+
+    ofile = open(full_filename, "wb")
+    writer = csv.DictWriter(ofile, fieldnames=pop_fields, quotechar='"', quoting=csv.QUOTE_ALL)
+    headers = dict((n, n) for n in pop_fields)
+    writer.writerow(headers)
+
+    cursor = data.MixtureModelStats.m.find(dict(), dict(timeout=False))
+    for sample in cursor:
+        # slatkin exact
+        richness_values = sample['pop_richness']
+
+        for value in richness_values:
+            row = dict()
+            row['simulation_run_id'] = sample['simulation_run_id']
+            row['model_class_label'] = sample['model_class_label']
+            row['innovation_rate'] = sample['innovation_rate']
+            row['richness_locus_value'] = value
+
+            #log.info("sim data row: %s", row)
+            writer.writerow(row)
+
+    ofile.close()
+
+
+
+
+
 ############################################################################
 
 if __name__ == "__main__":
@@ -215,6 +354,8 @@ if __name__ == "__main__":
     export_sampled_stats()
     export_ta_sampled_stats()
 
+    export_slatkin_locus_values()
+    export_richness_locus_values()
 
 
 
