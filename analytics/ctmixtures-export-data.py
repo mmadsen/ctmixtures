@@ -220,8 +220,8 @@ def export_sampled_stats():
 
             entropy_list = sample['entropy_ssize'][str(ssize)]
             row['entropy_locus_min'] = min(entropy_list)
-            row['entropy_locus_min'] = max(entropy_list)
-            row['entropy_locus_min'] = np.average(entropy_list)
+            row['entropy_locus_max'] = max(entropy_list)
+            row['entropy_locus_mean'] = np.average(entropy_list)
 
             iqv_list = sample['iqv_ssize'][str(ssize)]
             row['iqv_locus_min'] = min(iqv_list)
