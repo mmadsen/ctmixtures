@@ -25,7 +25,7 @@ def setup():
 
     args = parser.parse_args()
 
-    if args.debug == 1:
+    if int(args.debug) == 1:
         log.basicConfig(level=log.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
     else:
         log.basicConfig(level=log.INFO, format='%(asctime)s %(levelname)s: %(message)s')
@@ -201,7 +201,9 @@ def export_sampled_stats():
 
         # all of the other fields require iterating over sample sizes.
         ssizes = sample['sample_size']
+        #log.debug("ssizes: %s", ssizes)
         for ssize in ssizes:
+            #log.debug("processing sample size: %s", ssize)
             row['sample_size'] = ssize
             row['config_slatkin_ssize'] = sample['config_slatkin_ssize'][str(ssize)]
 
@@ -228,8 +230,8 @@ def export_sampled_stats():
             row['iqv_locus_max'] = max(iqv_list)
             row['iqv_locus_mean'] = np.average(iqv_list)
 
-        #log.info("sim data row: %s", row)
-        writer.writerow(row)
+            #log.debug("sampled data row: %s", row)
+            writer.writerow(row)
 
     ofile.close()
 
