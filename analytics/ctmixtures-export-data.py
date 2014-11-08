@@ -248,11 +248,12 @@ def export_sampled_stats():
 # config_entropy_ta_ssize = Field(schema.Anything)
 # config_iqv_ta_ssize = Field(schema.Anything)
 # kandler_remaining_tassize = Field(schema.Anything)
+#
+#  ta interval -> locus -> sample size -> { data }
+#
+
 
 def export_ta_sampled_stats():
-
-    # METHOD NOT IMPLEMENTED YET
-    return
 
     ## export a file with sampled statistics
     full_filename = ''
@@ -260,6 +261,29 @@ def export_ta_sampled_stats():
     full_filename += "-tasampled-data.csv"
 
     sim_fields = data.mixture_model_stats.tassize_columns_to_export()
+    sim_fields.append('innovation_rate')
+    sim_fields.append('ta_duration')
+    sim_fields.append('sample_size')
+    sim_fields.append('config_slatkin_ta_ssize')
+    sim_fields.append('num_configurations_ta_ssize')
+    sim_fields.append('config_iqv_ta_ssize')
+    sim_fields.append('config_entropy_ta_ssize')
+    sim_fields.append('richness_locus_min_tassize')
+    sim_fields.append('richness_locus_max_tassize')
+    sim_fields.append('richness_locus_mean_tassize')
+    sim_fields.append('entropy_locus_min_tassize')
+    sim_fields.append('entropy_locus_max_tassize')
+    sim_fields.append('entropy_locus_mean_tassize')
+    sim_fields.append('iqv_locus_min_tassize')
+    sim_fields.append('iqv_locus_max_tassize')
+    sim_fields.append('iqv_locus_mean_tassize')
+    sim_fields.append('slatkin_locus_min_tassize')
+    sim_fields.append('slatkin_locus_max_tassize')
+    sim_fields.append('slatkin_locus_mean_tassize')
+    sim_fields.append('kandler_locus_min_tassize')
+    sim_fields.append('kandler_locus_max_tassize')
+    sim_fields.append('kandler_locus_mean_tassize')
+
 
     ofile = open(full_filename, "wb")
     writer = csv.DictWriter(ofile, fieldnames=sim_fields, quotechar='"', quoting=csv.QUOTE_ALL)
@@ -268,9 +292,79 @@ def export_ta_sampled_stats():
     cursor = data.MixtureModelStats.m.find(dict(), dict(timeout=False))
 
     for sample in cursor:
-        pass
+        log.debug("sample %s", sample['simulation_run_id'])
+        # all of the other fields require iterating over sample sizes and TA intervals
+        # TODO TA interval isn't explicitly recorded in the database, so must infer
+        ssizes = sample['sample_size']
+        ta_intervals = sample['config_slatkin_ta_ssize'].keys()
+        num_loci = sample['num_features']
+
+        # first handle those statistics which do not have per-locus measurements
+        for tadur in ta_intervals:
+            for ssize in ssizes:
+                row = dict()
+                row['simulation_run_id'] = sample['simulation_run_id']
+                row['model_class_label'] = sample['model_class_label']
+                row['innovation_rate'] = sample['innovation_rate']
+                log.debug("Processing duration %s and ssize %s", tadur, ssize)
+                row['ta_duration'] = tadur
+                row['sample_size'] = ssize
+
+                row['config_slatkin_ta_ssize'] = sample['config_slatkin_ta_ssize'][str(tadur)][str(ssize)]
+                row['num_configurations_ta_ssize'] = sample['num_configurations_ta_ssize'][str(tadur)][str(ssize)]
+                row['config_iqv_ta_ssize'] = sample['config_iqv_ta_ssize'][str(tadur)][str(ssize)]
+                row['config_entropy_ta_ssize'] = sample['config_entropy_ta_ssize'][str(tadur)][str(ssize)]
+
+                # now handle statistics that have per-locus measurements
+                # The first set are screwed up and have the locus before the ssize, which makes processing them a pain in the butt
+
+                richness = sample['richness_ta_ssize'][str(tadur)]
+                richness_list = get_list_of_stats_for_locus_and_ssize(richness, ssize, num_loci)
+                row['richness_locus_min_tassize'] = min(richness_list)
+                row['richness_locus_max_tassize'] = max(richness_list)
+                row['richness_locus_mean_tassize'] = np.average(richness_list)
+
+                entropy = sample['entropy_ta_ssize'][str(tadur)]
+                entropy_list = get_list_of_stats_for_locus_and_ssize(entropy, ssize, num_loci)
+                row['entropy_locus_min_tassize'] = min(entropy_list)
+                row['entropy_locus_max_tassize'] = max(entropy_list)
+                row['entropy_locus_mean_tassize'] = np.average(entropy_list)
+
+                iqv = sample['iqv_ta_ssize'][str(tadur)]
+                iqv_list = get_list_of_stats_for_locus_and_ssize(iqv, ssize, num_loci)
+                row['iqv_locus_min_tassize'] = min(iqv_list)
+                row['iqv_locus_max_tassize'] = max(iqv_list)
+                row['iqv_locus_mean_tassize'] = np.average(iqv_list)
+
+                slatkin = sample['slatkin_ta_ssize'][str(tadur)]
+                slatkin_list = get_list_of_stats_for_locus_and_ssize(slatkin, ssize, num_loci)
+                row['slatkin_locus_min_tassize'] = min(slatkin_list)
+                row['slatkin_locus_max_tassize'] = max(slatkin_list)
+                row['slatkin_locus_mean_tassize'] = np.average(slatkin_list)
+                
+                # kandler is structured to have locus data last, which is the way I did sampled and it works well
+                # don't do it this way again!!
+                
+                kandler_list = sample['kandler_remaining_tassize'][str(tadur)][str(ssize)]
+                row['kandler_locus_min_tassize'] = min(kandler_list)
+                row['kandler_locus_max_tassize'] = max(kandler_list)
+                row['kandler_locus_mean_tassize'] = np.average(kandler_list)
+
+                #log.debug("sampled data row: %s", row)
+                writer.writerow(row)
 
     ofile.close()
+
+
+def get_list_of_stats_for_locus_and_ssize(duration_map, ssize, num_loci):
+    vals = []
+    for locus in xrange(0, num_loci):
+        vals.append(duration_map[str(locus)][str(ssize)])
+    return vals
+
+
+############################################################################
+# # misc exports
 
 
 def export_slatkin_locus_values():
@@ -351,13 +445,13 @@ def export_richness_locus_values():
 
 if __name__ == "__main__":
     setup()
-    export_simulation_record()
-    export_population_stats()
-    export_sampled_stats()
+    #export_simulation_record()
+    #export_population_stats()
+    #export_sampled_stats()
     export_ta_sampled_stats()
 
-    export_slatkin_locus_values()
-    export_richness_locus_values()
+    #export_slatkin_locus_values()
+    #export_richness_locus_values()
 
 
 
