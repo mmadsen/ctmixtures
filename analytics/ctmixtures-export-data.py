@@ -9,6 +9,7 @@ import csv
 import logging as log
 import argparse
 import ctmixtures.data as data
+import ctmixtures.analysis as analysis
 import numpy as np
 
 
@@ -66,6 +67,7 @@ def export_simulation_record():
     ofile.close()
 
 
+
 ############################################################################
 # # whole population statistics
 # slatkin_exact = Field([float])
@@ -89,6 +91,7 @@ def export_population_stats():
     pop_fields.append('innovation_rate')
     pop_fields.append('slatkin_locus_max')
     pop_fields.append('slatkin_locus_min')
+    pop_fields.append('slatkin_locus_mean')
     pop_fields.append('entropy_locus_max')
     pop_fields.append('entropy_locus_min')
     pop_fields.append('entropy_locus_mean')
@@ -101,6 +104,17 @@ def export_population_stats():
     pop_fields.append('kandler_locus_max')
     pop_fields.append('kandler_locus_min')
     pop_fields.append('kandler_locus_mean')
+    pop_fields.append('config_entropy')
+    pop_fields.append('config_iqv')
+    pop_fields.append('config_neiman_tf')
+    pop_fields.append('neiman_tf_locus_min')
+    pop_fields.append('neiman_tf_locus_max')
+    pop_fields.append('neiman_tf_locus_mean')
+    #pop_fields.append('powerlaw_locus_min')
+    #pop_fields.append('powerlaw_locus_mean')
+    #pop_fields.append('powerlaw_locus_max')
+    #pop_fields.append('config_powerlaw_exponent')
+
 
     ofile = open(full_filename, "wb")
     writer = csv.DictWriter(ofile, fieldnames=pop_fields, quotechar='"', quoting=csv.QUOTE_ALL)
@@ -120,9 +134,10 @@ def export_population_stats():
         slatkin_values = sample['slatkin_exact']
         row['slatkin_locus_max'] = max(slatkin_values)
         row['slatkin_locus_min'] = min(slatkin_values)
+        row['slatkin_locus_mean'] = np.average(slatkin_values)
 
         # shannon entropy
-        entropy_list = sample['slatkin_exact']
+        entropy_list = sample['shannon_entropy']
         row['entropy_locus_max'] = max(entropy_list)
         row['entropy_locus_min'] = min(entropy_list)
         row['entropy_locus_mean'] = np.average(entropy_list)
@@ -144,6 +159,42 @@ def export_population_stats():
         row['kandler_locus_max'] = max(kandler_list)
         row['kandler_locus_min'] = min(kandler_list)
         row['kandler_locus_mean'] = np.average(kandler_list)
+
+        # Now calculate entropy and IQV from the trait configuration counts
+        freqlist = []
+        countlist = sample['trait_configuration_counts']
+        total = sum(countlist)
+
+        for count in countlist:
+            freq = float(count) / float(total)
+            freqlist.append(freq)
+
+        row['config_entropy'] = analysis.diversity_shannon_entropy(freqlist)
+        row['config_iqv'] = analysis.diversity_iqv(freqlist)
+
+        # config_neiman_tf is easy since we have the frequency list
+
+        row['config_neiman_tf'] = analysis.neiman_tf(freqlist)
+
+        # Calculate Neiman's t_f statistic
+        # Neiman fields are (1 / sum(freq^2)) - 1
+        tflist = []
+        num_loci = int(sample['num_features'])
+
+        for locus in xrange(0, num_loci):
+            locus_freq_list = sample['unlabeled_frequencies'][locus]
+            tflist.append(analysis.neiman_tf(locus_freq_list))
+
+        row['neiman_tf_locus_max'] = max(tflist)
+        row['neiman_tf_locus_min'] = min(tflist)
+        row['neiman_tf_locus_mean'] = np.average(tflist)
+
+
+
+
+
+
+
 
         #log.info("sim data row: %s", row)
         writer.writerow(row)
@@ -186,6 +237,8 @@ def export_sampled_stats():
     sim_fields.append('iqv_locus_min')
     sim_fields.append('iqv_locus_max')
     sim_fields.append('iqv_locus_mean')
+    #sim_fields.append('config_entropy_ssize')    TODO
+    #sim_fields.append('config_iqv_ssize')   TODO
 
     ofile = open(full_filename, "wb")
     writer = csv.DictWriter(ofile, fieldnames=sim_fields, quotechar='"', quoting=csv.QUOTE_ALL)
@@ -283,6 +336,10 @@ def export_ta_sampled_stats():
     sim_fields.append('kandler_locus_min_tassize')
     sim_fields.append('kandler_locus_max_tassize')
     sim_fields.append('kandler_locus_mean_tassize')
+    sim_fields.append('config_neiman_tf_tassize')
+    sim_fields.append('neiman_tf_locus_min_tassize')
+    sim_fields.append('neiman_tf_locus_max_tassize')
+    sim_fields.append('neiman_tf_locus_mean_tassize')
 
 
     ofile = open(full_filename, "wb")
@@ -350,6 +407,21 @@ def export_ta_sampled_stats():
                 row['kandler_locus_max_tassize'] = max(kandler_list)
                 row['kandler_locus_mean_tassize'] = np.average(kandler_list)
 
+
+                # config neiman tf
+                config_count_map = sample['unlabeled_config_counts_ta_ssize'][str(tadur)][str(ssize)]
+                config_count_list = config_count_map.values()
+                total = sum(config_count_list)
+                config_freq_list = [(float(x)/float(total)) for x in config_count_list]
+                row['config_neiman_tf_tassize'] = analysis.neiman_tf(config_freq_list)
+
+                # neiman locus min, max, mean TODO
+                locus_freq = sample['unlabeled_freq_ta_ssize'][str(tadur)]
+                locus_tf_list = get_locus_stats_for_ssize(locus_freq, analysis.neiman_tf, ssize, num_loci)
+                row['neiman_tf_locus_min_tassize'] = min(locus_tf_list)
+                row['neiman_tf_locus_max_tassize'] = max(locus_tf_list)
+                row['neiman_tf_locus_mean_tassize'] = np.average(locus_tf_list)
+
                 #log.debug("sampled data row: %s", row)
                 writer.writerow(row)
 
@@ -361,6 +433,17 @@ def get_list_of_stats_for_locus_and_ssize(duration_map, ssize, num_loci):
     for locus in xrange(0, num_loci):
         vals.append(duration_map[str(locus)][str(ssize)])
     return vals
+
+def get_locus_stats_for_ssize(locus_map, stat_function, ssize, num_loci):
+    vals = []
+    for locus in xrange(0, num_loci):
+        locus_values = locus_map[str(locus)][str(ssize)]
+        log.debug("locus_values: %s", locus_values)
+        stat = stat_function(locus_values)
+        log.debug("stat: %s", stat)
+        vals.append(stat)
+    return vals
+
 
 
 ############################################################################
@@ -446,7 +529,7 @@ def export_richness_locus_values():
 if __name__ == "__main__":
     setup()
     #export_simulation_record()
-    #export_population_stats()
+    export_population_stats()
     #export_sampled_stats()
     export_ta_sampled_stats()
 

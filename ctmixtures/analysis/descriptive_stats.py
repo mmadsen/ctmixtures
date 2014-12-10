@@ -69,6 +69,13 @@ def _sum_squares(freq_list):
         ss += p ** 2.0
     return ss
 
+def neiman_tf(count_list):
+    tfsum = 0
+    for val in count_list:
+        tfsum += float(val)**2
+    tf = (1.0 / tfsum) - 1.0
+    return tf
+
 
 #################################################################################
 

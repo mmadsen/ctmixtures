@@ -12,4 +12,5 @@ from ctmixtures.analysis.overlap import (calc_overlap_locusallele, calc_overlap_
                                          get_different_feature_positions_locusallele,
                                          get_traits_differing_from_focal_setstructured)
 from ctmixtures.analysis.descriptive_stats import (PopulationTraitAnalyzer, SampledTraitAnalyzer,
-                                                   TimeAveragedPopulationTraitAnalyzer, TimeAveragedSampledTraitAnalyzer)
+                                                   TimeAveragedPopulationTraitAnalyzer, TimeAveragedSampledTraitAnalyzer,
+                                                    diversity_iqv, diversity_shannon_entropy, neiman_tf)

@@ -127,6 +127,18 @@ class PopulationInitializationTest(unittest.TestCase):
         self.assertTrue(True)
 
 
+    def test_neiman_tf(self):
+        log.info("test_neiman_tf")
+
+        data = [0.5, 0.5]
+        expected = 1.0
+
+        obs = analysis.neiman_tf(data)
+        self.assertAlmostEqual(obs, expected, delta = 0.1)
+
+
+
+
 
 
 if __name__ == "__main__":
